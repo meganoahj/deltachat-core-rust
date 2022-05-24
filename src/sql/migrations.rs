@@ -690,6 +690,15 @@ CREATE INDEX smtp_messageid ON imap(rfc724_mid);
         }
         sql.set_db_version(98).await?;
     }
+    if dbversion < 99 {
+        sql.execute_migration(
+            r#"CREATE TABLE download (
+            msg_id INTEGER NOT NULL, -- id of the message stub in msgs table
+            );"#,
+            99,
+        )
+        .await?;
+    }
 
     let new_version = sql
         .get_raw_config_int(VERSION_CFG)

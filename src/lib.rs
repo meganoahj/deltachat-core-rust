@@ -68,9 +68,6 @@ pub mod ephemeral;
 mod http;
 mod imap;
 pub mod imex;
-mod scheduler;
-#[macro_use]
-mod job;
 pub mod key;
 mod keyring;
 pub mod location;
@@ -86,6 +83,7 @@ pub mod provider;
 pub mod qr;
 pub mod qr_code_generator;
 pub mod quota;
+mod scheduler;
 pub mod securejoin;
 mod simplify;
 mod smtp;
