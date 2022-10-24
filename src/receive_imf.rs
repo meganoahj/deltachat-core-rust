@@ -278,28 +278,26 @@ pub(crate) async fn receive_imf_inner(
         }
     }
 
-    // Always update the status, even if there is no footer, to allow removing the status.
-    //
-    // Ignore MDNs though, as they never contain the signature even if user has set it.
     // Ignore footers from mailinglists as they are often created or modified by the mailinglist software.
-    if mime_parser.mdn_reports.is_empty()
-        && !mime_parser.is_mailinglist_message()
-        && is_partial_download.is_none()
-        && from_id != ContactId::UNDEFINED
-        && context
-            .update_contacts_timestamp(from_id, Param::StatusTimestamp, sent_timestamp)
-            .await?
-    {
-        if let Err(err) = contact::set_status(
-            context,
-            from_id,
-            mime_parser.footer.clone().unwrap_or_default(),
-            mime_parser.was_encrypted(),
-            mime_parser.has_chat_version(),
-        )
-        .await
-        {
-            warn!(context, "cannot update contact status: {}", err);
+    if !mime_parser.is_mailinglist_message() {
+        if let Some(footer) = &mime_parser.footer {
+            if from_id != ContactId::UNDEFINED
+                && context
+                    .update_contacts_timestamp(from_id, Param::StatusTimestamp, sent_timestamp)
+                    .await?
+            {
+                if let Err(err) = contact::set_status(
+                    context,
+                    from_id,
+                    footer.to_string(),
+                    mime_parser.was_encrypted(),
+                    mime_parser.has_chat_version(),
+                )
+                .await
+                {
+                    warn!(context, "cannot update contact status: {}", err);
+                }
+            }
         }
     }
 
