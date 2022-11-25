@@ -1,4 +1,5 @@
 pub mod api;
+pub use api::events;
 pub use yerpc;
 
 #[cfg(test)]

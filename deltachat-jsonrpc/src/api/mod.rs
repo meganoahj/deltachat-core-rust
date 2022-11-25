@@ -84,7 +84,11 @@ impl CommandApi {
     }
 }
 
-#[rpc(all_positional, ts_outdir = "typescript/generated", openrpc_path = "openrpc")]
+#[rpc(
+    all_positional,
+    ts_outdir = "typescript/generated",
+    openrpc_path = "openrpc"
+)]
 impl CommandApi {
     // ---------------------------------------------
     //  Misc top level functions
