@@ -15,10 +15,10 @@ use typescript_type_def::TypeDef;
 
 use super::color_int_to_hex_string;
 
-#[derive(Deserialize, Serialize, TypeDef)]
+#[derive(Deserialize, Serialize, TypeDef, schemars::JsonSchema)]
 pub struct ChatListEntry(pub u32, pub u32);
 
-#[derive(Serialize, TypeDef)]
+#[derive(Serialize, TypeDef, schemars::JsonSchema)]
 #[serde(tag = "type")]
 pub enum ChatListItemFetchResult {
     #[serde(rename_all = "camelCase")]

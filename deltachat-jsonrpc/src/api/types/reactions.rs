@@ -5,7 +5,7 @@ use serde::Serialize;
 use typescript_type_def::TypeDef;
 
 /// Structure representing all reactions to a particular message.
-#[derive(Serialize, TypeDef)]
+#[derive(Serialize, TypeDef, schemars::JsonSchema)]
 #[serde(rename = "Reactions", rename_all = "camelCase")]
 pub struct JSONRPCReactions {
     /// Map from a contact to it's reaction to message.
