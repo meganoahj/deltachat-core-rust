@@ -148,3 +148,6 @@ vendored = [
   "reqwest/native-tls-vendored"
 ]
 nightly = ["pgp/nightly"]
+
+[patch.crates-io]
+yerpc = { git = "https://github.com/Frando/yerpc.git", branch = "openrpc", features = ["anyhow_expose"] }

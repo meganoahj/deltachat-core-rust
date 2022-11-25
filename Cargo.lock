@@ -916,7 +916,7 @@ dependencies = [
  "tokio",
  "typescript-type-def",
  "walkdir",
- "yerpc 0.3.1 (git+https://github.com/Frando/yerpc.git?branch=openrpc)",
+ "yerpc",
 ]
 
 [[package]]
@@ -931,7 +931,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
- "yerpc 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "yerpc",
 ]
 
 [[package]]
@@ -4183,25 +4183,6 @@ dependencies = [
 [[package]]
 name = "yerpc"
 version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d1baa6fce4cf16d1cff91b557baceac3e363106f66e555fff906a7f82dce8153"
-dependencies = [
- "anyhow",
- "async-channel",
- "async-mutex",
- "async-trait",
- "futures",
- "futures-util",
- "log",
- "serde",
- "serde_json",
- "typescript-type-def",
- "yerpc_derive 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "yerpc"
-version = "0.3.1"
 source = "git+https://github.com/Frando/yerpc.git?branch=openrpc#2498ea057edd224bcded09f1da139576427e4cef"
 dependencies = [
  "anyhow",
@@ -4218,20 +4199,7 @@ dependencies = [
  "tokio",
  "tracing",
  "typescript-type-def",
- "yerpc_derive 0.3.0 (git+https://github.com/Frando/yerpc.git?branch=openrpc)",
-]
-
-[[package]]
-name = "yerpc_derive"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e70f944ca6789bc55ddc86839478f6d49c9d2a66e130f69fd1f8d171b3108990"
-dependencies = [
- "convert_case",
- "darling 0.14.1",
- "proc-macro2",
- "quote",
- "syn",
+ "yerpc_derive",
 ]
 
 [[package]]
