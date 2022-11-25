@@ -150,4 +150,4 @@ vendored = [
 nightly = ["pgp/nightly"]
 
 [patch.crates-io]
-yerpc = { git = "https://github.com/Frando/yerpc.git", branch = "openrpc", features = ["anyhow_expose"] }
+yerpc = { git = "https://github.com/link2xt/yerpc.git", branch = "link2xt/openrpc-required", features = ["anyhow_expose"] }

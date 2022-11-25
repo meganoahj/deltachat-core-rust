@@ -4183,7 +4183,7 @@ dependencies = [
 [[package]]
 name = "yerpc"
 version = "0.3.1"
-source = "git+https://github.com/Frando/yerpc.git?branch=openrpc#2498ea057edd224bcded09f1da139576427e4cef"
+source = "git+https://github.com/link2xt/yerpc.git?branch=link2xt/openrpc-required#8939c439fa0d47f237d4b3fd80b394dd6d60ae8b"
 dependencies = [
  "anyhow",
  "async-channel",
@@ -4205,7 +4205,7 @@ dependencies = [
 [[package]]
 name = "yerpc_derive"
 version = "0.3.0"
-source = "git+https://github.com/Frando/yerpc.git?branch=openrpc#2498ea057edd224bcded09f1da139576427e4cef"
+source = "git+https://github.com/link2xt/yerpc.git?branch=link2xt/openrpc-required#8939c439fa0d47f237d4b3fd80b394dd6d60ae8b"
 dependencies = [
  "convert_case",
  "darling 0.14.1",

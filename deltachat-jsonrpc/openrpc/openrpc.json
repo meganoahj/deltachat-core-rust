@@ -14,7 +14,8 @@
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -22,7 +23,8 @@
         "schema": {
           "title": "Boolean",
           "type": "boolean"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -38,7 +40,8 @@
           "additionalProperties": {
             "type": "string"
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -52,7 +55,8 @@
           "type": "integer",
           "format": "uint32",
           "minimum": 0.0
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -66,7 +70,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -74,7 +79,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -91,7 +97,8 @@
             "format": "uint32",
             "minimum": 0.0
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -106,7 +113,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -114,7 +122,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -132,7 +141,8 @@
           ],
           "format": "uint32",
           "minimum": 0.0
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -211,7 +221,8 @@
               }
             ]
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -223,7 +234,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -235,7 +247,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -249,7 +262,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -257,7 +271,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -271,7 +286,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -279,7 +295,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -294,7 +311,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -365,7 +383,8 @@
               }
             }
           ]
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -380,7 +399,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -390,7 +410,8 @@
           "type": "integer",
           "format": "uint64",
           "minimum": 0.0
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -405,14 +426,16 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "email",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -441,7 +464,8 @@
               "minimum": 0.0
             }
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -456,7 +480,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -464,7 +489,8 @@
         "schema": {
           "title": "Boolean",
           "type": "boolean"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -479,7 +505,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -490,7 +517,8 @@
           "additionalProperties": {
             "type": "string"
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -504,14 +532,16 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "key",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         },
         {
           "name": "value",
@@ -521,7 +551,8 @@
               "string",
               "null"
             ]
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -529,7 +560,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -543,7 +575,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "config",
@@ -556,7 +589,8 @@
                 "null"
               ]
             }
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -564,7 +598,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -579,14 +614,16 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "qrContent",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -594,7 +631,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -608,14 +646,16 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "qrContent",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -1020,7 +1060,8 @@
               }
             }
           ]
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -1034,14 +1075,16 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "key",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -1052,7 +1095,8 @@
             "string",
             "null"
           ]
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -1066,7 +1110,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "keys",
@@ -1076,7 +1121,8 @@
             "items": {
               "type": "string"
             }
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -1090,7 +1136,8 @@
               "null"
             ]
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -1105,7 +1152,8 @@
             "additionalProperties": {
               "type": "string"
             }
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -1113,7 +1161,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -1128,7 +1177,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -1136,7 +1186,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -1151,7 +1202,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -1159,7 +1211,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -1173,14 +1226,16 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "path",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         },
         {
           "name": "passphrase",
@@ -1190,7 +1245,8 @@
               "string",
               "null"
             ]
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -1198,7 +1254,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -1212,14 +1269,16 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "path",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         },
         {
           "name": "passphrase",
@@ -1229,7 +1288,8 @@
               "string",
               "null"
             ]
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -1237,7 +1297,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -1252,7 +1313,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -1265,7 +1327,8 @@
             "format": "uint32",
             "minimum": 0.0
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -1280,7 +1343,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -1289,7 +1353,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -1299,7 +1364,8 @@
           "type": "integer",
           "format": "uint",
           "minimum": 0.0
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -1314,14 +1380,16 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "fromServer",
           "schema": {
             "title": "Boolean",
             "type": "boolean"
-          }
+          },
+          "required": true
         },
         {
           "name": "seconds",
@@ -1329,7 +1397,8 @@
             "title": "int64",
             "type": "integer",
             "format": "int64"
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -1339,7 +1408,8 @@
           "type": "integer",
           "format": "uint",
           "minimum": 0.0
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -1353,7 +1423,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -1361,7 +1432,8 @@
         "schema": {
           "title": "String",
           "type": "string"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -1375,7 +1447,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "messageId",
@@ -1384,14 +1457,16 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "setupCode",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -1399,7 +1474,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -1413,7 +1489,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "listFlags",
@@ -1425,7 +1502,8 @@
             ],
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "queryString",
@@ -1435,7 +1513,8 @@
               "string",
               "null"
             ]
-          }
+          },
+          "required": true
         },
         {
           "name": "queryContactId",
@@ -1447,7 +1526,8 @@
             ],
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -1472,7 +1552,8 @@
             "maxItems": 2,
             "minItems": 2
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -1486,7 +1567,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "entries",
@@ -1510,7 +1592,8 @@
               "maxItems": 2,
               "minItems": 2
             }
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -1679,7 +1762,8 @@
               }
             ]
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -1693,7 +1777,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -1702,7 +1787,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -1876,7 +1962,8 @@
               "type": "boolean"
             }
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -1891,7 +1978,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -1900,7 +1988,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -1967,7 +2056,8 @@
               ]
             }
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -1981,7 +2071,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -1990,7 +2081,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -1998,7 +2090,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2012,7 +2105,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -2021,7 +2115,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2029,7 +2124,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2044,7 +2140,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -2053,7 +2150,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2061,7 +2159,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2076,7 +2175,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -2085,7 +2185,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2093,7 +2194,8 @@
         "schema": {
           "title": "String",
           "type": "string"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2108,7 +2210,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -2120,7 +2223,8 @@
             ],
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2138,7 +2242,8 @@
           ],
           "maxItems": 2,
           "minItems": 2
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2153,14 +2258,16 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "qr",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2170,7 +2277,8 @@
           "type": "integer",
           "format": "uint32",
           "minimum": 0.0
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2184,7 +2292,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -2193,7 +2302,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2201,7 +2311,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2216,7 +2327,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -2225,7 +2337,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "contactId",
@@ -2234,7 +2347,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2242,7 +2356,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2257,7 +2372,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -2266,7 +2382,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "contactId",
@@ -2275,7 +2392,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2283,7 +2401,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2298,7 +2417,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -2307,7 +2427,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2320,7 +2441,8 @@
             "format": "uint32",
             "minimum": 0.0
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2335,21 +2457,24 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "name",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         },
         {
           "name": "protect",
           "schema": {
             "title": "Boolean",
             "type": "boolean"
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2359,7 +2484,8 @@
           "type": "integer",
           "format": "uint32",
           "minimum": 0.0
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2374,7 +2500,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2384,7 +2511,8 @@
           "type": "integer",
           "format": "uint32",
           "minimum": 0.0
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2399,7 +2527,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -2408,14 +2537,16 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "newName",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2423,7 +2554,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2438,7 +2570,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -2447,7 +2580,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "imagePath",
@@ -2457,7 +2591,8 @@
               "string",
               "null"
             ]
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2465,7 +2600,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2479,7 +2615,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -2488,7 +2625,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "visibility",
@@ -2500,7 +2638,8 @@
               "Archived",
               "Pinned"
             ]
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2508,7 +2647,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2522,7 +2662,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -2531,7 +2672,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "timer",
@@ -2540,7 +2682,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2548,7 +2691,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2562,7 +2706,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -2571,7 +2716,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2581,7 +2727,8 @@
           "type": "integer",
           "format": "uint32",
           "minimum": 0.0
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2595,21 +2742,24 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "label",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         },
         {
           "name": "text",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2619,7 +2769,8 @@
           "type": "integer",
           "format": "uint32",
           "minimum": 0.0
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2634,7 +2785,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -2643,7 +2795,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2651,7 +2804,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2665,7 +2819,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -2674,7 +2829,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2687,7 +2843,8 @@
           ],
           "format": "uint32",
           "minimum": 0.0
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2702,7 +2859,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -2711,7 +2869,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "duration",
@@ -2739,7 +2898,8 @@
                 "additionalProperties": false
               }
             ]
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2747,7 +2907,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2762,7 +2923,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -2771,7 +2933,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2779,7 +2942,8 @@
         "schema": {
           "title": "Boolean",
           "type": "boolean"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2794,7 +2958,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "msgIds",
@@ -2806,7 +2971,8 @@
               "format": "uint32",
               "minimum": 0.0
             }
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2814,7 +2980,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2828,7 +2995,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -2837,7 +3005,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "flags",
@@ -2846,7 +3015,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2859,7 +3029,8 @@
             "format": "uint32",
             "minimum": 0.0
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2873,7 +3044,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -2882,7 +3054,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "flags",
@@ -2891,7 +3064,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -2944,7 +3118,8 @@
               }
             ]
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -2958,7 +3133,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "messageId",
@@ -2967,7 +3143,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -3566,7 +3743,8 @@
               }
             }
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -3580,7 +3758,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "messageId",
@@ -3589,7 +3768,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -3600,7 +3780,8 @@
             "string",
             "null"
           ]
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -3614,7 +3795,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "messageIds",
@@ -3626,7 +3808,8 @@
               "format": "uint32",
               "minimum": 0.0
             }
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -4228,7 +4411,8 @@
               }
             }
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -4243,7 +4427,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "messageId",
@@ -4252,7 +4437,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -4316,7 +4502,8 @@
               "type": "string"
             }
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -4331,7 +4518,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "messageIds",
@@ -4343,7 +4531,8 @@
               "format": "uint32",
               "minimum": 0.0
             }
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -4351,7 +4540,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -4366,7 +4556,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "messageId",
@@ -4375,7 +4566,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -4383,7 +4575,8 @@
         "schema": {
           "title": "String",
           "type": "string"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -4398,7 +4591,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "messageId",
@@ -4407,7 +4601,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -4415,7 +4610,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -4430,14 +4626,16 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "query",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -4449,7 +4647,8 @@
             ],
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -4462,7 +4661,8 @@
             "format": "uint32",
             "minimum": 0.0
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -4476,7 +4676,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "messageIds",
@@ -4488,7 +4689,8 @@
               "format": "uint32",
               "minimum": 0.0
             }
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -4538,7 +4740,8 @@
               }
             }
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -4553,7 +4756,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "contactId",
@@ -4562,7 +4766,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -4632,7 +4837,8 @@
               "type": "boolean"
             }
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -4647,14 +4853,16 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "email",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         },
         {
           "name": "name",
@@ -4664,7 +4872,8 @@
               "string",
               "null"
             ]
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -4674,7 +4883,8 @@
           "type": "integer",
           "format": "uint32",
           "minimum": 0.0
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -4689,7 +4899,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "contactId",
@@ -4698,7 +4909,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -4708,7 +4920,8 @@
           "type": "integer",
           "format": "uint32",
           "minimum": 0.0
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -4722,7 +4935,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "contactId",
@@ -4731,7 +4945,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -4739,7 +4954,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -4753,7 +4969,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "contactId",
@@ -4762,7 +4979,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -4770,7 +4988,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -4784,7 +5003,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -4857,7 +5077,8 @@
               }
             }
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -4871,7 +5092,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "listFlags",
@@ -4880,7 +5102,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "query",
@@ -4890,7 +5113,8 @@
               "string",
               "null"
             ]
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -4903,7 +5127,8 @@
             "format": "uint32",
             "minimum": 0.0
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -4918,7 +5143,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "listFlags",
@@ -4927,7 +5153,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "query",
@@ -4937,7 +5164,8 @@
               "string",
               "null"
             ]
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -5010,7 +5238,8 @@
               }
             }
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -5024,7 +5253,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "ids",
@@ -5036,7 +5266,8 @@
               "format": "uint32",
               "minimum": 0.0
             }
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -5109,7 +5340,8 @@
               }
             }
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -5123,7 +5355,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "contactId",
@@ -5132,7 +5365,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -5140,7 +5374,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -5154,7 +5389,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "contactId",
@@ -5163,14 +5399,16 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "name",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -5178,7 +5416,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -5193,7 +5432,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "contactId",
@@ -5202,7 +5442,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -5210,7 +5451,8 @@
         "schema": {
           "title": "String",
           "type": "string"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -5225,14 +5467,16 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "addr",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -5245,7 +5489,8 @@
           ],
           "format": "uint32",
           "minimum": 0.0
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -5260,7 +5505,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -5272,7 +5518,8 @@
             ],
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "messageType",
@@ -5356,7 +5603,8 @@
                 ]
               }
             ]
-          }
+          },
+          "required": true
         },
         {
           "name": "orMessageType2",
@@ -5447,7 +5695,8 @@
                 "type": "null"
               }
             ]
-          }
+          },
+          "required": true
         },
         {
           "name": "orMessageType3",
@@ -5538,7 +5787,8 @@
                 "type": "null"
               }
             ]
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -5551,7 +5801,8 @@
             "format": "uint32",
             "minimum": 0.0
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -5566,7 +5817,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "msgId",
@@ -5575,7 +5827,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "messageType",
@@ -5659,7 +5912,8 @@
                 ]
               }
             ]
-          }
+          },
+          "required": true
         },
         {
           "name": "orMessageType2",
@@ -5750,7 +6004,8 @@
                 "type": "null"
               }
             ]
-          }
+          },
+          "required": true
         },
         {
           "name": "orMessageType3",
@@ -5841,7 +6096,8 @@
                 "type": "null"
               }
             ]
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -5869,7 +6125,8 @@
           ],
           "maxItems": 2,
           "minItems": 2
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -5883,14 +6140,16 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "destination",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         },
         {
           "name": "passphrase",
@@ -5900,7 +6159,8 @@
               "string",
               "null"
             ]
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -5908,7 +6168,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -5922,14 +6183,16 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "path",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         },
         {
           "name": "passphrase",
@@ -5939,7 +6202,8 @@
               "string",
               "null"
             ]
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -5947,7 +6211,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -5960,7 +6225,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -5975,7 +6241,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -5985,7 +6252,8 @@
           "type": "integer",
           "format": "uint32",
           "minimum": 0.0
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -6000,7 +6268,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -6008,7 +6277,8 @@
         "schema": {
           "title": "String",
           "type": "string"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -6022,7 +6292,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -6034,7 +6305,8 @@
             ],
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "contactId",
@@ -6046,7 +6318,8 @@
             ],
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "timestampBegin",
@@ -6054,7 +6327,8 @@
             "title": "int64",
             "type": "integer",
             "format": "int64"
-          }
+          },
+          "required": true
         },
         {
           "name": "timestampEnd",
@@ -6062,7 +6336,8 @@
             "title": "int64",
             "type": "integer",
             "format": "int64"
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -6131,7 +6406,8 @@
               }
             }
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -6145,7 +6421,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "instanceMsgId",
@@ -6154,21 +6431,24 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "updateStr",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         },
         {
           "name": "description",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -6176,7 +6456,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -6190,7 +6471,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "instanceMsgId",
@@ -6199,7 +6481,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "lastKnownSerial",
@@ -6208,7 +6491,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -6216,7 +6500,8 @@
         "schema": {
           "title": "String",
           "type": "string"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -6231,7 +6516,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "instanceMsgId",
@@ -6240,7 +6526,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -6288,7 +6575,8 @@
               ]
             }
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -6303,7 +6591,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "messageIds",
@@ -6315,7 +6604,8 @@
               "format": "uint32",
               "minimum": 0.0
             }
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -6324,7 +6614,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -6332,7 +6623,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -6346,7 +6638,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -6355,14 +6648,16 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "stickerPath",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -6372,7 +6667,8 @@
           "type": "integer",
           "format": "uint32",
           "minimum": 0.0
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -6387,7 +6683,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "messageId",
@@ -6396,7 +6693,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "reaction",
@@ -6406,7 +6704,8 @@
             "items": {
               "type": "string"
             }
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -6416,7 +6715,8 @@
           "type": "integer",
           "format": "uint32",
           "minimum": 0.0
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -6430,7 +6730,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -6439,7 +6740,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -6447,7 +6749,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -6462,7 +6765,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -6471,7 +6775,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -7073,7 +7378,8 @@
               }
             }
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -7087,7 +7393,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -7096,7 +7403,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -7106,7 +7414,8 @@
           "type": "integer",
           "format": "uint32",
           "minimum": 0.0
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -7120,7 +7429,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -7128,7 +7438,8 @@
         "schema": {
           "title": "String",
           "type": "string"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -7143,7 +7454,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "msgId",
@@ -7152,14 +7464,16 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "collection",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -7167,7 +7481,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -7182,7 +7497,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -7196,7 +7512,8 @@
               "type": "string"
             }
           }
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -7211,7 +7528,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -7220,14 +7538,16 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "text",
           "schema": {
             "title": "String",
             "type": "string"
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -7237,7 +7557,8 @@
           "type": "integer",
           "format": "uint32",
           "minimum": 0.0
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -7251,7 +7572,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -7260,7 +7582,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "text",
@@ -7270,7 +7593,8 @@
               "string",
               "null"
             ]
-          }
+          },
+          "required": true
         },
         {
           "name": "file",
@@ -7280,7 +7604,8 @@
               "string",
               "null"
             ]
-          }
+          },
+          "required": true
         },
         {
           "name": "location",
@@ -7302,7 +7627,8 @@
             ],
             "maxItems": 2,
             "minItems": 2
-          }
+          },
+          "required": true
         },
         {
           "name": "quotedMessageId",
@@ -7314,7 +7640,8 @@
             ],
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -7925,7 +8252,8 @@
           ],
           "maxItems": 2,
           "minItems": 2
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     },
@@ -7939,7 +8267,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "chatId",
@@ -7948,7 +8277,8 @@
             "type": "integer",
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         },
         {
           "name": "text",
@@ -7958,7 +8288,8 @@
               "string",
               "null"
             ]
-          }
+          },
+          "required": true
         },
         {
           "name": "file",
@@ -7968,7 +8299,8 @@
               "string",
               "null"
             ]
-          }
+          },
+          "required": true
         },
         {
           "name": "quotedMessageId",
@@ -7980,7 +8312,8 @@
             ],
             "format": "uint32",
             "minimum": 0.0
-          }
+          },
+          "required": true
         }
       ],
       "result": {
@@ -7988,7 +8321,8 @@
         "schema": {
           "title": "Null",
           "type": "null"
-        }
+        },
+        "required": true
       },
       "paramStructure": "by-position"
     }
