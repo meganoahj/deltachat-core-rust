@@ -4,6 +4,7 @@
 
 ### Changes
 - Make smeared timestamp generation non-async. #4075
+- Buffer IMAP STARTTLS command. #3909.
 
 ### Fixes
 
