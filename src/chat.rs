@@ -967,6 +967,11 @@ impl ChatId {
                 }
             }
 
+            if metric < 0.1 {
+                // Chat is unrelated.
+                continue;
+            }
+
             res.push((chat_id, metric));
             if res.len() >= 5 {
                 break;
