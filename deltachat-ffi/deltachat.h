@@ -1243,6 +1243,18 @@ int             dc_get_msg_cnt               (dc_context_t* context, uint32_t ch
 int             dc_get_fresh_msg_cnt         (dc_context_t* context, uint32_t chat_id);
 
 
+/**
+ * Returns a list of similar chats.
+ *
+ * @memberof dc_context_t
+ * @param context The context object as returned from dc_context_new().
+ * @param chat_id The ID of the chat for which to find similar chats.
+ * @return The list of similar chats.
+ *     On errors, NULL is returned.
+ *     Must be freed using dc_chatlist_unref() when no longer used.
+ */
+dc_chatlist_t*     dc_get_similar_chatlist   (dc_context_t* context, uint32_t chat_id);
+
 
 /**
  * Estimate the number of messages that will be deleted

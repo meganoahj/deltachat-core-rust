@@ -172,6 +172,7 @@
 - jsonrpc: add fresh message count to ChatListItemFetchResult::ArchiveLink
 - Add ffi functions to retrieve `verified by` information #3786
 - resultify `Message::get_filebytes()` #3925
+- add API to get similar chats
 
 ### Fixes
 - Do not add an error if the message is encrypted but not signed #3860

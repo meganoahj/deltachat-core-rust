@@ -451,6 +451,25 @@ impl CommandApi {
         Ok(l)
     }
 
+    /// Returns chats similar to the given one.
+    async fn get_similar_chatlist_entries(
+        &self,
+        account_id: u32,
+        chat_id: u32,
+    ) -> Result<Vec<ChatListEntry>> {
+        let ctx = self.get_context(account_id).await?;
+        let chat_id = ChatId::new(chat_id);
+        let list = chat_id.get_similar_chatlist(&ctx).await?;
+        let mut l: Vec<ChatListEntry> = Vec::with_capacity(list.len());
+        for i in 0..list.len() {
+            l.push(ChatListEntry(
+                list.get_chat_id(i)?.to_u32(),
+                list.get_msg_id(i)?.unwrap_or_default().to_u32(),
+            ));
+        }
+        Ok(l)
+    }
+
     async fn get_chatlist_items_by_entries(
         &self,
         account_id: u32,
