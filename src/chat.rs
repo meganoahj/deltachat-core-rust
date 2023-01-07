@@ -972,6 +972,11 @@ impl ChatId {
                 continue;
             }
 
+            let chat = Chat::load_from_db(context, chat_id).await?;
+            if chat.typ != Chattype::Group {
+                continue;
+            }
+
             res.push((chat_id, metric));
             if res.len() >= 5 {
                 break;
