@@ -956,7 +956,7 @@ impl ChatId {
                 .unwrap_or(chat_id2.cmp(chat_id1))
         });
 
-        // Select 15 most similar active chats.
+        // Select up to five similar active chats.
         let mut res = Vec::new();
         let now = time();
         for (chat_id, metric) in chats_with_metrics {
@@ -968,7 +968,7 @@ impl ChatId {
             }
 
             res.push((chat_id, metric));
-            if res.len() >= 15 {
+            if res.len() >= 5 {
                 break;
             }
         }
