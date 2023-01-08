@@ -977,6 +977,11 @@ impl ChatId {
                 continue;
             }
 
+            match chat.visibility {
+                ChatVisibility::Normal | ChatVisibility::Pinned => {}
+                ChatVisibility::Archived => continue,
+            }
+
             res.push((chat_id, metric));
             if res.len() >= 5 {
                 break;
