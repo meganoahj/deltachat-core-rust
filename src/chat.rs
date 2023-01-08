@@ -892,7 +892,7 @@ impl ChatId {
     ///
     /// Jaccard similarity coefficient is used to estimate similarity of chat member sets.
     ///
-    /// Chat is considered active if something was posted there within the last 90 days.
+    /// Chat is considered active if something was posted there within the last 42 days.
     pub async fn get_similar_chat_ids(self, context: &Context) -> Result<Vec<(ChatId, f64)>> {
         // Count number of common members in this and other chats.
         let intersection: Vec<(ChatId, f64)> = context
@@ -961,8 +961,8 @@ impl ChatId {
         let now = time();
         for (chat_id, metric) in chats_with_metrics {
             if let Some(chat_timestamp) = chat_id.get_timestamp(context).await? {
-                if now > chat_timestamp + 90 * 24 * 3600 {
-                    // Chat was inactive for 90 days, skip.
+                if now > chat_timestamp + 42 * 24 * 3600 {
+                    // Chat was inactive for 42 days, skip.
                     continue;
                 }
             }
