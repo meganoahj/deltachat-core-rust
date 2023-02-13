@@ -801,7 +801,7 @@ pub async fn cmdline(context: Context, line: &str, chat_id: &mut ChatId) -> Resu
             println!("{} contacts", contacts.len());
 
             let similar_chats = sel_chat_id.get_similar_chat_ids(&context).await?;
-            if similar_chats.len() > 0 {
+            if !similar_chats.is_empty() {
                 println!("Similar chats: ");
                 for (similar_chat_id, metric) in similar_chats {
                     let similar_chat = Chat::load_from_db(&context, similar_chat_id).await?;

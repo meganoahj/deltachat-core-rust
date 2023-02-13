@@ -946,7 +946,7 @@ impl ChatId {
             if intersection_size > 0.0 {
                 let other_chat_size = chat_size.get(&chat_id).copied().unwrap_or_default();
                 let union_size = our_chat_size + other_chat_size - intersection_size;
-                let metric = f64::from(intersection_size) / f64::from(union_size);
+                let metric = intersection_size / union_size;
                 chats_with_metrics.push((chat_id, metric))
             }
         }
