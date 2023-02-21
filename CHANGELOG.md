@@ -5,6 +5,8 @@
 ### Changes
 - Add support for `--version` argument to `deltachat-rpc-server`. #4224
   It can be used to check the installed version without starting the server.
+- Remove metadata from avatars and JPEG images before sending #4037
+- Reduce + recode images to JPEG if they are > 500K in size #4037
 
 ### Fixes
 - deltachat-rpc-client: fix bug in `Chat.send_message()`: invalid `MessageData` field `quotedMsg` instead of `quotedMsgId`
@@ -48,7 +50,6 @@
 - Run `cargo-deny` in CI. #4101
 - Check provider database with CI. #4099 
 - Switch to DEFERRED transactions #4100
-- Remove metadata from avatars and JPEG images before sending #4037
 
 ### Fixes
 - Do not block async task executor while decrypting the messages. #4079
