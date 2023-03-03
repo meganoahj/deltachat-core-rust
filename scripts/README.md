@@ -6,7 +6,15 @@ and an own build machine.
 
 ## Description of scripts 
 
+Scripts should be ran from the root of the repository,
+for example:
+```
+$ scripts/clippy.sh
+```
+
 - `clippy.sh` runs `cargo clippy` for all Rust code in the project.
+
+- `benchmark-tests.sh`
 
 - `../.github/workflows` contains jobs run by GitHub Actions.
 
@@ -21,6 +29,7 @@ and an own build machine.
 - `run_all.sh` builds Python wheels
 
 - `aarch64-unknown-linux-musl.sh` cross-compiles static `deltachat-rpc-server` for aarch64
+
 
 ## Triggering runs on the build machine locally (fast!)
 
