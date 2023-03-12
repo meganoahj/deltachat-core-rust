@@ -2,7 +2,7 @@
 
 use std::str::FromStr;
 
-use anyhow::{ensure, Context as _, Result};
+use anyhow::{bail, ensure, Context as _, Result};
 use strum::{EnumProperty, IntoEnumIterator};
 use strum_macros::{AsRefStr, Display, EnumIter, EnumProperty, EnumString};
 
@@ -446,8 +446,14 @@ impl Context {
                     .set_raw_config(key.as_ref(), value.as_deref())
                     .await?;
             }
+
             _ => {
-                self.sql.set_raw_config(key.as_ref(), value).await?;
+                let key = key.as_ref();
+                if key.starts_with("configured_") {
+                    bail!("not allowed to set configured parameters directly");
+                } else {
+                    self.sql.set_raw_config(key, value).await?;
+                }
             }
         }
         Ok(())
@@ -510,7 +516,8 @@ impl Context {
         )
         .await?;
 
-        self.set_config(Config::ConfiguredAddr, Some(primary_new))
+        self.sql
+            .set_raw_config(Config::ConfiguredAddr.as_ref(), Some(primary_new))
             .await?;
 
         if let Some(old_addr) = old_addr {
@@ -637,6 +644,18 @@ mod tests {
         assert_eq!(t.get_config_bool(c).await?, true);
         t.set_config_bool(c, false).await?;
         assert_eq!(t.get_config_bool(c).await?, false);
+        Ok(())
+    }
+
+    /// Test that it is not allowed to set configured parameters directly via public interface.
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn test_set_configured() -> Result<()> {
+        let t = TestContext::new().await;
+
+        assert!(t
+            .set_config(Config::ConfiguredAddr, Some("alice@example.org"))
+            .await
+            .is_err());
         Ok(())
     }
 

@@ -4,6 +4,7 @@
 
 ### Changes
 - Drop unused SQL columns #4141
+- Do not allow to set `configured_*` parameters via public interface #4149
 
 
 ## 1.111.0

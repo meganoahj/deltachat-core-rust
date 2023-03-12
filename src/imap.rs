@@ -2597,15 +2597,12 @@ mod tests {
         println!("Testing: For folder {folder}, mvbox_move {mvbox_move}, chat_msg {chat_msg}, accepted {accepted_chat}, outgoing {outgoing}, setupmessage {setupmessage}");
 
         let t = TestContext::new_alice().await;
-        t.ctx
-            .set_config(Config::ConfiguredMvboxFolder, Some("DeltaChat"))
-            .await?;
-        t.ctx
-            .set_config(Config::ConfiguredSentboxFolder, Some("Sent"))
-            .await?;
-        t.ctx
-            .set_config(Config::MvboxMove, Some(if mvbox_move { "1" } else { "0" }))
-            .await?;
+        t.set_raw_config(Config::ConfiguredMvboxFolder, Some("DeltaChat"))
+            .await;
+        t.set_raw_config(Config::ConfiguredSentboxFolder, Some("Sent"))
+            .await;
+        t.set_raw_config(Config::MvboxMove, Some(if mvbox_move { "1" } else { "0" }))
+            .await;
 
         if accepted_chat {
             let contact_id = Contact::create(&t.ctx, "", "bob@example.net").await?;
