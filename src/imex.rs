@@ -782,6 +782,20 @@ async fn export_database(context: &Context, dest: &Path, passphrase: String) -> 
         .await
 }
 
+/// Serializes the database to a file.
+pub async fn serialize_database(context: &Context, filename: &str) -> Result<()> {
+    let file = File::create(filename).await?;
+    context.sql.serialize(file).await?;
+    Ok(())
+}
+
+/// Deserializes the database from a file.
+pub async fn deserialize_database(context: &Context, filename: &str) -> Result<()> {
+    let file = File::open(filename).await?;
+    context.sql.deserialize(file).await?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use std::time::Duration;
