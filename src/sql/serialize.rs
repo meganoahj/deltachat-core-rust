@@ -5,9 +5,10 @@
 //! Output format is based on [bencoding](http://bittorrent.org/beps/bep_0003.html)
 //! with newlines added for better readability.
 
-use anyhow::Result;
+use anyhow::{Result, Context as _};
 use num_traits::ToPrimitive;
 use rusqlite::Transaction;
+use rusqlite::types::ValueRef;
 use tokio::io::{AsyncWrite, AsyncWriteExt};
 
 use super::Sql;
@@ -295,9 +296,16 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             let timestamp_sent: i64 = row.get("timestamp_sent")?;
             let timestamp_rcvd: i64 = row.get("timestamp_rcvd")?;
             let hidden: i64 = row.get("hidden")?;
-            let mime_headers: Vec<u8> = row.get("mime_headers")?;
-            let mime_in_reply_to: String = row.get("mime_in_reply_to")?;
-            let mime_references: String = row.get("mime_references")?;
+            let mime_headers: Vec<u8> =
+                row.get("mime_headers")
+                    .or_else(|err| match row.get_ref("mime_headers")? {
+                        ValueRef::Null => Ok(Vec::new()),
+                        ValueRef::Text(text) => Ok(text.to_vec()),
+                        ValueRef::Blob(blob) => Ok(blob.to_vec()),
+                        ValueRef::Integer(_) | ValueRef::Real(_) => Err(err),
+                    })?;
+            let mime_in_reply_to: Option<String> = row.get("mime_in_reply_to")?;
+            let mime_references: Option<String> = row.get("mime_references")?;
             let location_id: i64 = row.get("location_id")?;
 
             self.w.write_all(b"d\n").await?;
@@ -354,11 +362,15 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             write_str(&mut self.w, "mime_headers").await?;
             write_bytes(&mut self.w, &mime_headers).await?;
 
-            write_str(&mut self.w, "mime_in_reply_to").await?;
-            write_str(&mut self.w, &mime_in_reply_to).await?;
+            if let Some(mime_in_reply_to) = mime_in_reply_to {
+                write_str(&mut self.w, "mime_in_reply_to").await?;
+                write_str(&mut self.w, &mime_in_reply_to).await?;
+            }
 
-            write_str(&mut self.w, "mime_references").await?;
-            write_str(&mut self.w, &mime_references).await?;
+            if let Some(mime_references) = mime_references {
+                write_str(&mut self.w, "mime_references").await?;
+                write_str(&mut self.w, &mime_references).await?;
+            }
 
             write_str(&mut self.w, "location_id").await?;
             write_i64(&mut self.w, location_id).await?;
@@ -418,7 +430,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         self.serialize_keypairs().await?;
 
         write_str(&mut self.w, "messages").await?;
-        self.serialize_messages().await?;
+        self.serialize_messages().await.context("serialize messages")?;
 
         write_str(&mut self.w, "mdns").await?;
         self.serialize_mdns().await?;
