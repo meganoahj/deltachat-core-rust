@@ -34,14 +34,6 @@ async fn write_str(w: &mut (impl AsyncWrite + Unpin), s: &str) -> Result<()> {
     Ok(())
 }
 
-async fn write_u64(w: &mut (impl AsyncWrite + Unpin), i: u64) -> Result<()> {
-    let s = format!("{i}");
-    w.write_all(b"i").await?;
-    w.write_all(s.as_bytes()).await?;
-    w.write_all(b"e\n").await?;
-    Ok(())
-}
-
 async fn write_i64(w: &mut (impl AsyncWrite + Unpin), i: i64) -> Result<()> {
     let s = format!("{i}");
     w.write_all(b"i").await?;
@@ -205,26 +197,75 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
     }
 
     async fn serialize_leftgroups(&mut self) -> Result<()> {
-        // TODO leftgrps
-        self.w.write_all(b"le\n").await?;
+        let mut stmt = self.tx.prepare("SELECT grpid FROM leftgrps")?;
+        let mut rows = stmt.query(())?;
+
+        self.w.write_all(b"l").await?;
+        while let Some(row) = rows.next()? {
+            let grpid: String = row.get("grpid")?;
+            write_str(&mut self.w, &grpid).await?;
+        }
+        self.w.write_all(b"e\n").await?;
         Ok(())
     }
 
     async fn serialize_keypairs(&mut self) -> Result<()> {
+        let mut stmt = self
+            .tx
+            .prepare("SELECT id,addr,is_default,private_key,public_key,created FROM keypairs")?;
+        let mut rows = stmt.query(())?;
+
+        self.w.write_all(b"l\n").await?;
+        while let Some(row) = rows.next()? {
+            let id: u32 = row.get("id")?;
+            let addr: String = row.get("addr")?;
+            let is_default: u32 = row.get("is_default")?;
+            let is_default = is_default != 0;
+            let private_key: Vec<u8> = row.get("private_key")?;
+            let public_key: Vec<u8> = row.get("public_key")?;
+            let created: i64 = row.get("created")?;
+
+            self.w.write_all(b"d\n").await?;
+
+            write_str(&mut self.w, "id").await?;
+            write_u32(&mut self.w, id).await?;
+
+            write_str(&mut self.w, "type").await?;
+            write_str(&mut self.w, &addr).await?;
+
+            write_str(&mut self.w, "is_default").await?;
+            write_bool(&mut self.w, is_default).await?;
+
+            write_str(&mut self.w, "private_key").await?;
+            write_bytes(&mut self.w, &private_key).await?;
+
+            write_str(&mut self.w, "public_key").await?;
+            write_bytes(&mut self.w, &public_key).await?;
+
+            write_str(&mut self.w, "created").await?;
+            write_i64(&mut self.w, created).await?;
+
+            self.w.write_all(b"e\n").await?;
+        }
+        self.w.write_all(b"e\n").await?;
         Ok(())
     }
 
     async fn serialize(&mut self) -> Result<()> {
         self.w.write_all(b"d\n").await?;
-        write_str(&mut self.w, "config").await?;
 
+        write_str(&mut self.w, "config").await?;
         self.serialize_config().await?;
+
         write_str(&mut self.w, "contacts").await?;
         self.serialize_contacts().await?;
+
         write_str(&mut self.w, "chats").await?;
         self.serialize_chats().await?;
+
         write_str(&mut self.w, "leftgroups").await?;
         self.serialize_leftgroups().await?;
+
         write_str(&mut self.w, "keypairs").await?;
         self.serialize_keypairs().await?;
 
@@ -255,6 +296,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
 }
 
 impl Sql {
+    /// Serializes the database into a bytestream.
     pub async fn serialize(&self, w: impl AsyncWrite + Unpin) -> Result<()> {
         let mut conn = self.get_connection().await?;
 

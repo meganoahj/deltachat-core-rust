@@ -73,7 +73,7 @@ impl<R: AsyncRead + Unpin> BencodeTokenizer<R> {
                     self.r.consume(1);
                 }
                 Some(&x) => {
-                    if x >= b'0' && x <= b'9' {
+                    if x.is_ascii_digit() {
                         let mut size_buf = Vec::new();
                         let n = self.r.read_until(b':', &mut size_buf).await?;
                         if n == 0 {
@@ -85,8 +85,7 @@ impl<R: AsyncRead + Unpin> BencodeTokenizer<R> {
                             let size = usize::from_str(size_str).with_context(|| {
                                 format!("cannot parse length prefix {size_str:?}")
                             })?;
-                            let mut str_buf = Vec::with_capacity(size);
-                            str_buf.resize(size, 0);
+                            let mut str_buf = vec![0; size];
                             self.r.read_exact(&mut str_buf).await.with_context(|| {
                                 format!("error while reading a string of {size} bytes")
                             })?;
@@ -101,6 +100,7 @@ impl<R: AsyncRead + Unpin> BencodeTokenizer<R> {
 }
 
 impl Sql {
+    /// Deserializes the database from a bytestream.
     pub async fn deserialize(&self, r: impl AsyncRead + Unpin) -> Result<()> {
         let mut tokenizer = BencodeTokenizer::new(r);
         while let Some(token) = tokenizer.next_token().await? {

@@ -522,11 +522,11 @@ pub async fn cmdline(context: Context, line: &str, chat_id: &mut ChatId) -> Resu
         }
         "dump" => {
             ensure!(!arg1.is_empty(), "Argument <filename> missing.");
-            serialize_database(&context, &arg1).await?;
+            serialize_database(&context, arg1).await?;
         }
         "read" => {
             ensure!(!arg1.is_empty(), "Argument <filename> missing.");
-            deserialize_database(&context, &arg1).await?;
+            deserialize_database(&context, arg1).await?;
         }
         "poke" => {
             ensure!(poke_spec(&context, Some(arg1)).await, "Poke failed");
