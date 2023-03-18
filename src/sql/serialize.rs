@@ -51,6 +51,11 @@ async fn write_u32(w: &mut (impl AsyncWrite + Unpin), i: u32) -> Result<()> {
     Ok(())
 }
 
+async fn write_f64(w: &mut (impl AsyncWrite + Unpin), f: f64) -> Result<()> {
+    write_bytes(w, &f.to_be_bytes()).await?;
+    Ok(())
+}
+
 async fn write_bool(w: &mut (impl AsyncWrite + Unpin), b: bool) -> Result<()> {
     if b {
         w.write_all(b"i1e\n").await?;
@@ -448,6 +453,51 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         Ok(())
     }
 
+    async fn serialize_locations(&mut self) -> Result<()> {
+        let mut stmt = self
+            .tx
+            .prepare("SELECT id, latitude, longitude, accuracy, timestamp, chat_id, from_id, independent FROM locations")?;
+        let mut rows = stmt.query(())?;
+
+        self.w.write_all(b"l\n").await?;
+        while let Some(row) = rows.next()? {
+            let id: i64 = row.get("id")?;
+            let latitude: f64 = row.get("latitude")?;
+            let longitude: f64 = row.get("longitude")?;
+            let accuracy: f64 = row.get("accuracy")?;
+            let timestamp: i64 = row.get("timestamp")?;
+            let chat_id: u32 = row.get("chat_id")?;
+            let from_id: u32 = row.get("from_id")?;
+
+            self.w.write_all(b"d\n").await?;
+
+            write_str(&mut self.w, "id").await?;
+            write_i64(&mut self.w, id).await?;
+
+            write_str(&mut self.w, "latitude").await?;
+            write_f64(&mut self.w, latitude).await?;
+
+            write_str(&mut self.w, "longitude").await?;
+            write_f64(&mut self.w, longitude).await?;
+
+            write_str(&mut self.w, "accuracy").await?;
+            write_f64(&mut self.w, accuracy).await?;
+
+            write_str(&mut self.w, "timestamp").await?;
+            write_i64(&mut self.w, timestamp).await?;
+
+            write_str(&mut self.w, "chat_id").await?;
+            write_u32(&mut self.w, chat_id).await?;
+
+            write_str(&mut self.w, "from_id").await?;
+            write_u32(&mut self.w, from_id).await?;
+
+            self.w.write_all(b"e\n").await?;
+        }
+        self.w.write_all(b"e\n").await?;
+        Ok(())
+    }
+
     async fn serialize(&mut self) -> Result<()> {
         self.w.write_all(b"d\n").await?;
 
@@ -477,7 +527,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         write_str(&mut self.w, "tokens").await?;
         self.serialize_tokens().await?;
 
-        // TODO locations
+        write_str(&mut self.w, "locations").await?;
+        self.serialize_locations().await?;
+
         // TODO devmsglabels
         // TODO imap_sync
         // TODO multi_device_sync
