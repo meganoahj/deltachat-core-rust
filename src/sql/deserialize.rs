@@ -4,6 +4,7 @@ use std::str::FromStr;
 
 use anyhow::{anyhow, Context as _, Result};
 use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncReadExt, BufReader};
+use bstr::BString;
 
 use super::Sql;
 
@@ -14,7 +15,7 @@ enum BencodeToken {
     End,
 
     /// Length-prefixed bytestring.
-    ByteString(Vec<u8>),
+    ByteString(BString),
 
     /// Integer like "i1000e".
     Integer(i64),
@@ -89,7 +90,7 @@ impl<R: AsyncRead + Unpin> BencodeTokenizer<R> {
                             self.r.read_exact(&mut str_buf).await.with_context(|| {
                                 format!("error while reading a string of {size} bytes")
                             })?;
-                            return Ok(Some(BencodeToken::ByteString(str_buf)));
+                            return Ok(Some(BencodeToken::ByteString(BString::new(str_buf))));
                         }
                     }
                     return Err(anyhow!("unexpected byte {x:?}"));
