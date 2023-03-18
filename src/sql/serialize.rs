@@ -5,7 +5,17 @@
 //! Output format is based on [bencoding](http://bittorrent.org/beps/bep_0003.html)
 //! with newlines added for better readability.
 
-use anyhow::{Context as _, Result};
+/// Database version supported by the current serialization code.
+///
+/// Serialization code MUST be updated before increasing this number.
+///
+/// If this version is below the actual database version,
+/// serialization code is outdated.
+/// If this version is above the actual database version,
+/// migrations have to be run first to update the database.
+const SERIALIZE_DBVERSION: &str = "99";
+
+use anyhow::{anyhow, Context as _, Result};
 use num_traits::ToPrimitive;
 use rusqlite::types::ValueRef;
 use rusqlite::Transaction;
@@ -499,6 +509,17 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
     }
 
     async fn serialize(&mut self) -> Result<()> {
+        let dbversion: String = self.tx.query_row(
+            "SELECT value FROM config WHERE keyname='dbversion'",
+            (),
+            |row| row.get(0),
+        )?;
+        if dbversion != SERIALIZE_DBVERSION {
+            return Err(anyhow!(
+                "cannot serialize database version {dbversion}, expected {SERIALIZE_DBVERSION}"
+            ));
+        }
+
         self.w.write_all(b"d\n").await?;
 
         write_str(&mut self.w, "config").await?;
