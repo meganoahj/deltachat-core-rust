@@ -414,17 +414,21 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
     async fn serialize_tokens(&mut self) -> Result<()> {
         let mut stmt = self
             .tx
-            .prepare("SELECT namespc, foreign_id, token, timestamp FROM tokens")?;
+            .prepare("SELECT id, namespc, foreign_id, token, timestamp FROM tokens")?;
         let mut rows = stmt.query(())?;
 
         self.w.write_all(b"l\n").await?;
         while let Some(row) = rows.next()? {
+            let id: i64 = row.get("id")?;
             let namespace: u32 = row.get("namespc")?;
             let foreign_id: u32 = row.get("foreign_id")?;
             let token: String = row.get("token")?;
             let timestamp: i64 = row.get("timestamp")?;
 
             self.w.write_all(b"d\n").await?;
+
+            write_str(&mut self.w, "id").await?;
+            write_i64(&mut self.w, id).await?;
 
             write_str(&mut self.w, "namespace").await?;
             write_u32(&mut self.w, namespace).await?;
