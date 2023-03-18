@@ -411,6 +411,39 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         Ok(())
     }
 
+    async fn serialize_tokens(&mut self) -> Result<()> {
+        let mut stmt = self
+            .tx
+            .prepare("SELECT namespc, foreign_id, token, timestamp FROM tokens")?;
+        let mut rows = stmt.query(())?;
+
+        self.w.write_all(b"l\n").await?;
+        while let Some(row) = rows.next()? {
+            let namespace: u32 = row.get("namespc")?;
+            let foreign_id: u32 = row.get("foreign_id")?;
+            let token: String = row.get("token")?;
+            let timestamp: i64 = row.get("timestamp")?;
+
+            self.w.write_all(b"d\n").await?;
+
+            write_str(&mut self.w, "namespace").await?;
+            write_u32(&mut self.w, namespace).await?;
+
+            write_str(&mut self.w, "foreign_id").await?;
+            write_u32(&mut self.w, foreign_id).await?;
+
+            write_str(&mut self.w, "token").await?;
+            write_str(&mut self.w, &token).await?;
+
+            write_str(&mut self.w, "timestamp").await?;
+            write_i64(&mut self.w, timestamp).await?;
+
+            self.w.write_all(b"e\n").await?;
+        }
+        self.w.write_all(b"e\n").await?;
+        Ok(())
+    }
+
     async fn serialize(&mut self) -> Result<()> {
         self.w.write_all(b"d\n").await?;
 
@@ -437,7 +470,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         write_str(&mut self.w, "mdns").await?;
         self.serialize_mdns().await?;
 
-        // TODO tokens
+        write_str(&mut self.w, "tokens").await?;
+        self.serialize_tokens().await?;
+
         // TODO locations
         // TODO devmsglabels
         // TODO imap_sync
