@@ -251,6 +251,154 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         Ok(())
     }
 
+    /// Serializes messages.
+    async fn serialize_messages(&mut self) -> Result<()> {
+        let mut stmt = self.tx.prepare(
+            "SELECT
+                        id,
+                        rfc724_mid,
+                        chat_id,
+                        from_id, to_id,
+                        timestamp,
+                        type,
+                        state,
+                        msgrmsg,
+                        bytes,
+                        txt,
+                        txt_raw,
+                        param,
+                        timestamp_sent,
+                        timestamp_rcvd,
+                        hidden,
+                        mime_headers,
+                        mime_in_reply_to,
+                        mime_references,
+                        location_id FROM msgs",
+        )?;
+        let mut rows = stmt.query(())?;
+
+        self.w.write_all(b"l\n").await?;
+        while let Some(row) = rows.next()? {
+            let id: i64 = row.get("id")?;
+            let rfc724_mid: String = row.get("rfc724_mid")?;
+            let chat_id: i64 = row.get("chat_id")?;
+            let from_id: i64 = row.get("from_id")?;
+            let to_id: i64 = row.get("to_id")?;
+            let timestamp: i64 = row.get("timestamp")?;
+            let typ: i64 = row.get("type")?;
+            let state: i64 = row.get("state")?;
+            let msgrmsg: i64 = row.get("msgrmsg")?;
+            let bytes: i64 = row.get("bytes")?;
+            let txt: String = row.get("txt")?;
+            let txt_raw: String = row.get("txt_raw")?;
+            let param: String = row.get("param")?;
+            let timestamp_sent: i64 = row.get("timestamp_sent")?;
+            let timestamp_rcvd: i64 = row.get("timestamp_rcvd")?;
+            let hidden: i64 = row.get("hidden")?;
+            let mime_headers: Vec<u8> = row.get("mime_headers")?;
+            let mime_in_reply_to: String = row.get("mime_in_reply_to")?;
+            let mime_references: String = row.get("mime_references")?;
+            let location_id: i64 = row.get("location_id")?;
+
+            self.w.write_all(b"d\n").await?;
+
+            write_str(&mut self.w, "id").await?;
+            write_i64(&mut self.w, id).await?;
+
+            write_str(&mut self.w, "rfc724_mid").await?;
+            write_str(&mut self.w, &rfc724_mid).await?;
+
+            write_str(&mut self.w, "chat_id").await?;
+            write_i64(&mut self.w, chat_id).await?;
+
+            write_str(&mut self.w, "from_id").await?;
+            write_i64(&mut self.w, from_id).await?;
+
+            write_str(&mut self.w, "to_id").await?;
+            write_i64(&mut self.w, to_id).await?;
+
+            write_str(&mut self.w, "timestamp").await?;
+            write_i64(&mut self.w, timestamp).await?;
+
+            write_str(&mut self.w, "type").await?;
+            write_i64(&mut self.w, typ).await?;
+
+            write_str(&mut self.w, "state").await?;
+            write_i64(&mut self.w, state).await?;
+
+            write_str(&mut self.w, "msgrmsg").await?;
+            write_i64(&mut self.w, msgrmsg).await?;
+
+            write_str(&mut self.w, "bytes").await?;
+            write_i64(&mut self.w, bytes).await?;
+
+            write_str(&mut self.w, "txt").await?;
+            write_str(&mut self.w, &txt).await?;
+
+            write_str(&mut self.w, "txt_raw").await?;
+            write_str(&mut self.w, &txt_raw).await?;
+
+            // TODO split into parts instead of writing as is
+            write_str(&mut self.w, "param").await?;
+            write_str(&mut self.w, &param).await?;
+
+            write_str(&mut self.w, "timestamp_sent").await?;
+            write_i64(&mut self.w, timestamp_sent).await?;
+
+            write_str(&mut self.w, "timestamp_rcvd").await?;
+            write_i64(&mut self.w, timestamp_rcvd).await?;
+
+            write_str(&mut self.w, "hidden").await?;
+            write_i64(&mut self.w, hidden).await?;
+
+            write_str(&mut self.w, "mime_headers").await?;
+            write_bytes(&mut self.w, &mime_headers).await?;
+
+            write_str(&mut self.w, "mime_in_reply_to").await?;
+            write_str(&mut self.w, &mime_in_reply_to).await?;
+
+            write_str(&mut self.w, "mime_references").await?;
+            write_str(&mut self.w, &mime_references).await?;
+
+            write_str(&mut self.w, "location_id").await?;
+            write_i64(&mut self.w, location_id).await?;
+
+            self.w.write_all(b"e\n").await?;
+        }
+        self.w.write_all(b"e\n").await?;
+        Ok(())
+    }
+
+    /// Serializes MDNs.
+    async fn serialize_mdns(&mut self) -> Result<()> {
+        let mut stmt = self
+            .tx
+            .prepare("SELECT msg_id, contact_id, timestamp_sent FROM msgs_mdns")?;
+        let mut rows = stmt.query(())?;
+
+        self.w.write_all(b"l\n").await?;
+        while let Some(row) = rows.next()? {
+            let msg_id: u32 = row.get("msg_id")?;
+            let contact_id: u32 = row.get("contact_id")?;
+            let timestamp_sent: i64 = row.get("timestamp_sent")?;
+
+            self.w.write_all(b"d\n").await?;
+
+            write_str(&mut self.w, "msg_id").await?;
+            write_u32(&mut self.w, msg_id).await?;
+
+            write_str(&mut self.w, "contact_id").await?;
+            write_u32(&mut self.w, contact_id).await?;
+
+            write_str(&mut self.w, "timestamp_sent").await?;
+            write_i64(&mut self.w, timestamp_sent).await?;
+
+            self.w.write_all(b"e\n").await?;
+        }
+        self.w.write_all(b"e\n").await?;
+        Ok(())
+    }
+
     async fn serialize(&mut self) -> Result<()> {
         self.w.write_all(b"d\n").await?;
 
@@ -269,11 +417,15 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         write_str(&mut self.w, "keypairs").await?;
         self.serialize_keypairs().await?;
 
-        // TODO msgs_mdns
+        write_str(&mut self.w, "messages").await?;
+        self.serialize_messages().await?;
+
+        write_str(&mut self.w, "mdns").await?;
+        self.serialize_mdns().await?;
+
         // TODO tokens
         // TODO locations
         // TODO devmsglabels
-        // TODO msgs
         // TODO imap_sync
         // TODO multi_device_sync
         // TODO imap
