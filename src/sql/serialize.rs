@@ -5,10 +5,10 @@
 //! Output format is based on [bencoding](http://bittorrent.org/beps/bep_0003.html)
 //! with newlines added for better readability.
 
-use anyhow::{Result, Context as _};
+use anyhow::{Context as _, Result};
 use num_traits::ToPrimitive;
-use rusqlite::Transaction;
 use rusqlite::types::ValueRef;
+use rusqlite::Transaction;
 use tokio::io::{AsyncWrite, AsyncWriteExt};
 
 use super::Sql;
@@ -430,7 +430,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         self.serialize_keypairs().await?;
 
         write_str(&mut self.w, "messages").await?;
-        self.serialize_messages().await.context("serialize messages")?;
+        self.serialize_messages()
+            .await
+            .context("serialize messages")?;
 
         write_str(&mut self.w, "mdns").await?;
         self.serialize_mdns().await?;
