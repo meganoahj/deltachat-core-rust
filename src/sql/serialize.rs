@@ -719,6 +719,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         // TODO acpeerstates
         // TODO chats_contacts
 
+        write_str(&mut self.w, "dns_cache").await?;
         self.serialize_dns_cache()
             .await
             .context("serialize dns_cache")?;
