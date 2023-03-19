@@ -426,6 +426,36 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         Ok(())
     }
 
+    /// Serializes reactions.
+    async fn serialize_reactions(&mut self) -> Result<()> {
+        let mut stmt = self
+            .tx
+            .prepare("SELECT msg_id, contact_id, reaction FROM reactions")?;
+        let mut rows = stmt.query(())?;
+
+        self.w.write_all(b"l\n").await?;
+        while let Some(row) = rows.next()? {
+            let msg_id: u32 = row.get("msg_id")?;
+            let contact_id: u32 = row.get("contact_id")?;
+            let reaction: String = row.get("reaction")?;
+
+            self.w.write_all(b"d\n").await?;
+
+            write_str(&mut self.w, "msg_id").await?;
+            write_u32(&mut self.w, msg_id).await?;
+
+            write_str(&mut self.w, "contact_id").await?;
+            write_u32(&mut self.w, contact_id).await?;
+
+            write_str(&mut self.w, "reaction").await?;
+            write_str(&mut self.w, &reaction).await?;
+
+            self.w.write_all(b"e\n").await?;
+        }
+        self.w.write_all(b"e\n").await?;
+        Ok(())
+    }
+
     async fn serialize_tokens(&mut self) -> Result<()> {
         let mut stmt = self
             .tx
@@ -661,6 +691,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         write_str(&mut self.w, "mdns").await?;
         self.serialize_mdns().await?;
 
+        write_str(&mut self.w, "reactions").await?;
+        self.serialize_reactions().await?;
+
         write_str(&mut self.w, "tokens").await?;
         self.serialize_tokens().await?;
 
@@ -682,8 +715,6 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
 
         // TODO msgs_status_updates
         // TODO bobstate
-        // TODO imap_markseen
-        // TODO reactions
         // TODO sending_domains
         // TODO acpeerstates
         // TODO chats_contacts
@@ -693,6 +724,8 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             .context("serialize dns_cache")?;
 
         // jobs table is skipped
+        // imap_markseen is skipped, it is usually empty and the device exporting the
+        // database should still be able to clear it.
         // smtp, smtp_mdns and smtp_status_updates tables are skipped, they are part of the
         // outgoing message queue.
         // devmsglabels is skipped, it is reset in `delete_and_reset_all_device_msgs()` on import
