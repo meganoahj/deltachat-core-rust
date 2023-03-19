@@ -723,6 +723,31 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         Ok(())
     }
 
+    async fn serialize_chats_contacts(&mut self) -> Result<()> {
+        let mut stmt = self
+            .tx
+            .prepare("SELECT chat_id, contact_id FROM chats_contacts")?;
+        let mut rows = stmt.query(())?;
+
+        self.w.write_all(b"l\n").await?;
+        while let Some(row) = rows.next()? {
+            let chat_id: u32 = row.get("chat_id")?;
+            let contact_id: u32 = row.get("contact_id")?;
+
+            self.w.write_all(b"d\n").await?;
+
+            write_str(&mut self.w, "chat_id").await?;
+            write_u32(&mut self.w, chat_id).await?;
+
+            write_str(&mut self.w, "contact_id").await?;
+            write_u32(&mut self.w, contact_id).await?;
+
+            self.w.write_all(b"e\n").await?;
+        }
+        self.w.write_all(b"e\n").await?;
+        Ok(())
+    }
+
     async fn serialize_dns_cache(&mut self) -> Result<()> {
         let mut stmt = self
             .tx
@@ -823,7 +848,10 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             .await
             .context("serialize autocrypt peerstates")?;
 
-        // TODO chats_contacts
+        write_str(&mut self.w, "chats_contacts").await?;
+        self.serialize_chats_contacts()
+            .await
+            .context("serialize chats_contacts")?;
 
         write_str(&mut self.w, "dns_cache").await?;
         self.serialize_dns_cache()
