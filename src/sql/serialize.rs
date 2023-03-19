@@ -595,6 +595,35 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         Ok(())
     }
 
+    async fn serialize_dns_cache(&mut self) -> Result<()> {
+        let mut stmt = self
+            .tx
+            .prepare("SELECT hostname, address, timestamp FROM dns_cache")?;
+        let mut rows = stmt.query(())?;
+
+        self.w.write_all(b"l\n").await?;
+        while let Some(row) = rows.next()? {
+            let hostname: String = row.get("hostname")?;
+            let address: String = row.get("address")?;
+            let timestamp: i64 = row.get("timestamp")?;
+
+            self.w.write_all(b"d\n").await?;
+
+            write_str(&mut self.w, "hostname").await?;
+            write_str(&mut self.w, &hostname).await?;
+
+            write_str(&mut self.w, "address").await?;
+            write_str(&mut self.w, &address).await?;
+
+            write_str(&mut self.w, "timestamp").await?;
+            write_i64(&mut self.w, timestamp).await?;
+
+            self.w.write_all(b"e\n").await?;
+        }
+        self.w.write_all(b"e\n").await?;
+        Ok(())
+    }
+
     async fn serialize(&mut self) -> Result<()> {
         let dbversion: String = self.tx.query_row(
             "SELECT value FROM config WHERE keyname='dbversion'",
@@ -658,7 +687,10 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         // TODO sending_domains
         // TODO acpeerstates
         // TODO chats_contacts
-        // TODO dns_cache
+
+        self.serialize_dns_cache()
+            .await
+            .context("serialize dns_cache")?;
 
         // jobs table is skipped
         // smtp, smtp_mdns and smtp_status_updates tables are skipped, they are part of the
