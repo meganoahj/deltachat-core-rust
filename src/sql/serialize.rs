@@ -625,6 +625,104 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         Ok(())
     }
 
+    async fn serialize_sending_domains(&mut self) -> Result<()> {
+        let mut stmt = self.tx.prepare("SELECT domain, dkim_works FROM sending_domains")?;
+        let mut rows = stmt.query(())?;
+
+        self.w.write_all(b"l\n").await?;
+        while let Some(row) = rows.next()? {
+            let domain: String = row.get("domain")?;
+            let dkim_works: i64 = row.get("dkim_works")?;
+
+            self.w.write_all(b"d\n").await?;
+
+            write_str(&mut self.w, "domain").await?;
+            write_str(&mut self.w, &domain).await?;
+
+            write_str(&mut self.w, "dkim_works").await?;
+            write_i64(&mut self.w, dkim_works).await?;
+
+            self.w.write_all(b"e\n").await?;
+        }
+        self.w.write_all(b"e\n").await?;
+        Ok(())
+    }
+
+    async fn serialize_acpeerstates(&mut self) -> Result<()> {
+        let mut stmt = self.tx.prepare("SELECT id, addr, last_seen, last_seen_autocrypt, public_key, prefer_encrypted, gossip_timestamp, gossip_key, public_key_fingerprint, gossip_key_fingerprint, verified_key, verified_key_fingerprint FROM acpeerstates")?;
+        let mut rows = stmt.query(())?;
+
+        self.w.write_all(b"l\n").await?;
+        while let Some(row) = rows.next()? {
+            let addr: String = row.get("addr")?;
+            let prefer_encrypted: i64 = row.get("prefer_encrypted")?;
+
+            let last_seen: i64 = row.get("last_seen")?;
+
+            let last_seen_autocrypt: i64 = row.get("last_seen_autocrypt")?;
+            let public_key: Option<Vec<u8>> = row.get("public_key")?;
+            let public_key_fingerprint: Option<String> = row.get("public_key_fingerprint")?;
+
+            let gossip_timestamp: i64 = row.get("gossip_timestamp")?;
+            let gossip_key: Option<Vec<u8>> = row.get("gossip_key")?;
+            let gossip_key_fingerprint: Option<String> = row.get("gossip_key_fingerprint")?;
+
+            let verified_key: Option<Vec<u8>> = row.get("verified_key")?;
+            let verified_key_fingerprint: Option<String> = row.get("verified_key_fingerprint")?;
+
+            self.w.write_all(b"d\n").await?;
+
+            write_str(&mut self.w, "addr").await?;
+            write_str(&mut self.w, &addr).await?;
+
+            write_str(&mut self.w, "prefer_encrypted").await?;
+            write_i64(&mut self.w, prefer_encrypted).await?;
+
+            write_str(&mut self.w, "last_seen").await?;
+            write_i64(&mut self.w, last_seen).await?;
+
+            write_str(&mut self.w, "last_seen_autocrypt").await?;
+            write_i64(&mut self.w, last_seen_autocrypt).await?;
+
+            if let Some(public_key) = public_key {
+                write_str(&mut self.w, "public_key").await?;
+                write_bytes(&mut self.w, &public_key).await?;
+            }
+
+            if let Some(public_key_fingerprint) = public_key_fingerprint {
+                write_str(&mut self.w, "public_key_fingerprint").await?;
+                write_str(&mut self.w, &public_key_fingerprint).await?;
+            }
+
+            write_str(&mut self.w, "gossip_timestamp").await?;
+            write_i64(&mut self.w, gossip_timestamp).await?;
+
+            if let Some(gossip_key) = gossip_key {
+                write_str(&mut self.w, "gossip_key").await?;
+                write_bytes(&mut self.w, &gossip_key).await?;
+            }
+
+            if let Some(gossip_key_fingerprint) = gossip_key_fingerprint {
+                write_str(&mut self.w, "gossip_key_fingerprint").await?;
+                write_str(&mut self.w, &gossip_key_fingerprint).await?;
+            }
+
+            if let Some(verified_key) = verified_key {
+                write_str(&mut self.w, "verified_key").await?;
+                write_bytes(&mut self.w, &verified_key).await?;
+            }
+
+            if let Some(verified_key_fingerprint) = verified_key_fingerprint {
+                write_str(&mut self.w, "verified_key_fingerprint").await?;
+                write_str(&mut self.w, &verified_key_fingerprint).await?;
+            }
+
+            self.w.write_all(b"e\n").await?;
+        }
+        self.w.write_all(b"e\n").await?;
+        Ok(())
+    }
+
     async fn serialize_dns_cache(&mut self) -> Result<()> {
         let mut stmt = self
             .tx
@@ -713,10 +811,18 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             .await
             .context("serialize multi_device_sync")?;
 
+        write_str(&mut self.w, "sending_domains").await?;
+        self.serialize_sending_domains()
+            .await
+            .context("serialize sending_domains")?;
+
         // TODO msgs_status_updates
-        // TODO bobstate
-        // TODO sending_domains
-        // TODO acpeerstates
+
+        write_str(&mut self.w, "acpeerstates").await?;
+        self.serialize_acpeerstates()
+            .await
+            .context("serialize autocrypt peerstates")?;
+
         // TODO chats_contacts
 
         write_str(&mut self.w, "dns_cache").await?;
@@ -731,6 +837,8 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         // outgoing message queue.
         // devmsglabels is skipped, it is reset in `delete_and_reset_all_device_msgs()` on import
         // anyway
+        // bobstate is not serialized, it is temporary for joining or adding a contact.
+        //
         // TODO insert welcome message on import like done in `delete_and_reset_all_device_msgs()`?
         self.w.write_all(b"e\n").await?;
         Ok(())
