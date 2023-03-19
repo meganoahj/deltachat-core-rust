@@ -626,7 +626,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
     }
 
     async fn serialize_sending_domains(&mut self) -> Result<()> {
-        let mut stmt = self.tx.prepare("SELECT domain, dkim_works FROM sending_domains")?;
+        let mut stmt = self
+            .tx
+            .prepare("SELECT domain, dkim_works FROM sending_domains")?;
         let mut rows = stmt.query(())?;
 
         self.w.write_all(b"l\n").await?;
