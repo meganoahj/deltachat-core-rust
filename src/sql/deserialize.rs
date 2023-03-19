@@ -3,8 +3,8 @@
 use std::str::FromStr;
 
 use anyhow::{anyhow, Context as _, Result};
-use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncReadExt, BufReader};
 use bstr::BString;
+use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncReadExt, BufReader};
 
 use super::Sql;
 

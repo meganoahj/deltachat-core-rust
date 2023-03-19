@@ -508,6 +508,93 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         Ok(())
     }
 
+    async fn serialize_imap(&mut self) -> Result<()> {
+        let mut stmt = self
+            .tx
+            .prepare("SELECT id, rfc724_mid, folder, target, uid, uidvalidity FROM imap")?;
+        let mut rows = stmt.query(())?;
+
+        self.w.write_all(b"l\n").await?;
+        while let Some(row) = rows.next()? {
+            let id: i64 = row.get("id")?;
+            let rfc724_mid: String = row.get("rfc724_mid")?;
+            let folder: String = row.get("folder")?;
+            let target: String = row.get("target")?;
+            let uid: i64 = row.get("uid")?;
+            let uidvalidity: i64 = row.get("uidvalidity")?;
+
+            self.w.write_all(b"d\n").await?;
+
+            write_str(&mut self.w, "id").await?;
+            write_i64(&mut self.w, id).await?;
+
+            write_str(&mut self.w, "rfc724_mid").await?;
+            write_str(&mut self.w, &rfc724_mid).await?;
+
+            write_str(&mut self.w, "folder").await?;
+            write_str(&mut self.w, &folder).await?;
+
+            write_str(&mut self.w, "target").await?;
+            write_str(&mut self.w, &target).await?;
+
+            write_str(&mut self.w, "uid").await?;
+            write_i64(&mut self.w, uid).await?;
+
+            write_str(&mut self.w, "uidvalidity").await?;
+            write_i64(&mut self.w, uidvalidity).await?;
+
+            self.w.write_all(b"e\n").await?;
+        }
+        self.w.write_all(b"e\n").await?;
+        Ok(())
+    }
+
+    async fn serialize_imap_sync(&mut self) -> Result<()> {
+        let mut stmt = self
+            .tx
+            .prepare("SELECT folder, uidvalidity, uid_next, modseq FROM imap_sync")?;
+        let mut rows = stmt.query(())?;
+
+        self.w.write_all(b"l\n").await?;
+        while let Some(row) = rows.next()? {
+            let folder: String = row.get("folder")?;
+            let uidvalidity: i64 = row.get("uidvalidity")?;
+            let uidnext: i64 = row.get("uid_next")?;
+            let modseq: i64 = row.get("modseq")?;
+
+            self.w.write_all(b"d\n").await?;
+
+            write_str(&mut self.w, "folder").await?;
+            write_str(&mut self.w, &folder).await?;
+
+            write_str(&mut self.w, "uidvalidity").await?;
+            write_i64(&mut self.w, uidvalidity).await?;
+
+            write_str(&mut self.w, "uidnext").await?;
+            write_i64(&mut self.w, uidnext).await?;
+
+            write_str(&mut self.w, "modseq").await?;
+            write_i64(&mut self.w, modseq).await?;
+
+            self.w.write_all(b"e\n").await?;
+        }
+        self.w.write_all(b"e\n").await?;
+        Ok(())
+    }
+
+    async fn serialize_multi_device_sync(&mut self) -> Result<()> {
+        let mut stmt = self.tx.prepare("SELECT item FROM multi_device_sync")?;
+        let mut rows = stmt.query(())?;
+
+        self.w.write_all(b"l\n").await?;
+        while let Some(row) = rows.next()? {
+            let item: String = row.get("item")?;
+            write_str(&mut self.w, &item).await?;
+        }
+        self.w.write_all(b"e\n").await?;
+        Ok(())
+    }
+
     async fn serialize(&mut self) -> Result<()> {
         let dbversion: String = self.tx.query_row(
             "SELECT value FROM config WHERE keyname='dbversion'",
@@ -551,15 +638,22 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         write_str(&mut self.w, "locations").await?;
         self.serialize_locations().await?;
 
-        // TODO devmsglabels
-        // TODO imap_sync
-        // TODO multi_device_sync
-        // TODO imap
+        write_str(&mut self.w, "imap").await?;
+        self.serialize_imap().await.context("serialize imap")?;
+
+        write_str(&mut self.w, "imap_sync").await?;
+        self.serialize_imap_sync()
+            .await
+            .context("serialize imap_sync")?;
+
+        write_str(&mut self.w, "multi_device_sync").await?;
+        self.serialize_multi_device_sync()
+            .await
+            .context("serialize multi_device_sync")?;
+
         // TODO msgs_status_updates
         // TODO bobstate
         // TODO imap_markseen
-        // TODO smtp_mdns
-        // TODO smtp_status_updates
         // TODO reactions
         // TODO sending_domains
         // TODO acpeerstates
@@ -567,7 +661,11 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         // TODO dns_cache
 
         // jobs table is skipped
-        // smtp table is skipped, it is SMTP queue.
+        // smtp, smtp_mdns and smtp_status_updates tables are skipped, they are part of the
+        // outgoing message queue.
+        // devmsglabels is skipped, it is reset in `delete_and_reset_all_device_msgs()` on import
+        // anyway
+        // TODO insert welcome message on import like done in `delete_and_reset_all_device_msgs()`?
         self.w.write_all(b"e\n").await?;
         Ok(())
     }
