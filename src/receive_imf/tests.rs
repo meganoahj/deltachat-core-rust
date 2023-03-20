@@ -3249,7 +3249,7 @@ async fn test_mua_user_adds_recipient_to_single_chat() -> Result<()> {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn test_dont_rebuild_contacts_on_add_remove() -> Result<()> {
+async fn test_dont_recreate_contacts_on_add_remove() -> Result<()> {
     let alice = TestContext::new_alice().await;
     let bob = TestContext::new_bob().await;
 
@@ -3374,8 +3374,7 @@ async fn test_dont_readd_with_normal_msg() -> Result<()> {
 
     bob.recv_msg(&alice.pop_sent_msg().await).await;
 
-    // even though the received message contains a header for member addition,
-    // you are not added to the group
+    // Alice didn't receive Bobs leave message, but bob shouldn't readded himself just because of that.
     assert!(!is_contact_in_chat(&bob, bob_chat_id, ContactId::SELF).await?);
     Ok(())
 }
