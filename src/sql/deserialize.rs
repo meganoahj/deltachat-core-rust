@@ -2,7 +2,7 @@
 
 use std::str::FromStr;
 
-use anyhow::{anyhow, Context as _, Result};
+use anyhow::{anyhow, bail, Context as _, Result};
 use bstr::BString;
 use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncReadExt, BufReader};
 
@@ -100,13 +100,123 @@ impl<R: AsyncRead + Unpin> BencodeTokenizer<R> {
     }
 }
 
+struct Decoder<R: AsyncRead + Unpin> {
+    tokenizer: BencodeTokenizer<R>,
+}
+
+impl<R: AsyncRead + Unpin> Decoder<R> {
+    fn new(r: R) -> Self {
+        let tokenizer = BencodeTokenizer::new(r);
+        Self { tokenizer }
+    }
+
+    /// Expects a token.
+    ///
+    /// Returns an error on unexpected EOF.
+    async fn expect_token(&mut self) -> Result<BencodeToken> {
+        let token = self
+            .tokenizer
+            .next_token()
+            .await?
+            .context("unexpected end of file")?;
+        Ok(token)
+    }
+
+    /// Tries to read a dictionary token.
+    ///
+    /// Returns an error on EOF or unexpected token.
+    async fn expect_dictionary(&mut self) -> Result<()> {
+        let token = self.expect_token().await?;
+        match token {
+            BencodeToken::Dictionary => Ok(()),
+            t => Err(anyhow!("unexpected token {t:?}, expected dictionary")),
+        }
+    }
+
+    /// Tries to read a list token.
+    ///
+    /// Returns an error on EOF or unexpected token.
+    async fn expect_list(&mut self) -> Result<()> {
+        let token = self.expect_token().await?;
+        match token {
+            BencodeToken::List => Ok(()),
+            t => Err(anyhow!("unexpected token {t:?}, expected list")),
+        }
+    }
+
+    async fn deserialize_config(&mut self) -> Result<()> {
+        self.expect_dictionary().await?;
+        self.skip_until_end().await?;
+        Ok(())
+    }
+
+    async fn skip_until_end(&mut self) -> Result<()> {
+        let mut level: usize = 0;
+        loop {
+            let token = self.expect_token().await?;
+            match token {
+                BencodeToken::End => {
+                    if level == 0 {
+                        return Ok(());
+                    } else {
+                        level -= 1;
+                    }
+                }
+                BencodeToken::ByteString(_) | BencodeToken::Integer(_) => {}
+                BencodeToken::List | BencodeToken::Dictionary => level += 1,
+            }
+        }
+    }
+
+    async fn skip_object(&mut self) -> Result<()> {
+        let token = self.expect_token().await?;
+        match token {
+            BencodeToken::End => Err(anyhow!("unexpected end, expected an object")),
+            BencodeToken::ByteString(_) | BencodeToken::Integer(_) => Ok(()),
+            BencodeToken::List | BencodeToken::Dictionary => {
+                self.skip_until_end().await?;
+                Ok(())
+            }
+        }
+    }
+
+    async fn deserialize(&mut self) -> Result<()> {
+        self.expect_dictionary().await?;
+
+        loop {
+            let token = self.expect_token().await?;
+            match token {
+                BencodeToken::ByteString(key) => match key.as_slice() {
+                    b"config" => {
+                        self.deserialize_config()
+                            .await
+                            .context("deserialize_config")?;
+                    }
+                    b"contacts" => {
+                        self.expect_list().await?;
+                        self.skip_until_end().await?;
+                    }
+                    section => {
+                        self.skip_object()
+                            .await
+                            .with_context(|| format!("skipping {section:?}"))?;
+                    }
+                },
+                BencodeToken::End => break,
+                t => {
+                    bail!("unexpected token {t:?}, expected section name or end of dictionary");
+                }
+            }
+        }
+        Ok(())
+    }
+}
+
 impl Sql {
     /// Deserializes the database from a bytestream.
     pub async fn deserialize(&self, r: impl AsyncRead + Unpin) -> Result<()> {
-        let mut tokenizer = BencodeTokenizer::new(r);
-        while let Some(token) = tokenizer.next_token().await? {
-            println!("{:?}", token);
-        }
+        let mut decoder = Decoder::new(r);
+        decoder.deserialize().await?;
         Ok(())
     }
 }
