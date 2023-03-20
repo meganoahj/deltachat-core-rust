@@ -147,9 +147,48 @@ impl<'a, R: AsyncRead + Unpin> Decoder<'a, R> {
         }
     }
 
+    /// Tries to read a string.
+    ///
+    /// Returns an error on EOF or unexpected token.
+    async fn expect_string(&mut self) -> Result<BString> {
+        let token = self.expect_token().await?;
+        match token {
+            BencodeToken::ByteString(s) => Ok(s),
+            t => Err(anyhow!("unexpected token {t:?}, expected list")),
+        }
+    }
+
     async fn deserialize_config(&mut self) -> Result<()> {
+        let mut dbversion_found = false;
+
         self.expect_dictionary().await?;
-        self.skip_until_end().await?;
+        loop {
+            let token = self.expect_token().await?;
+            match token {
+                BencodeToken::ByteString(key) => {
+                    let value = self.expect_string().await?;
+                    println!("{key:?}={value:?}");
+
+                    if key.as_slice() == b"dbversion" {
+                        if dbversion_found {
+                            bail!("dbversion key found twice in the config");
+                        } else {
+                            dbversion_found = true;
+                        }
+
+                        if value.as_slice() != b"99" {
+                            bail!("unsupported serialized database version {value:?}, expected 99");
+                        }
+                    }
+                }
+                BencodeToken::End => break,
+                t => return Err(anyhow!("unexpected token {t:?}, expected config key")),
+            }
+        }
+
+        if !dbversion_found {
+            bail!("no dbversion found in the config");
+        }
         Ok(())
     }
 
@@ -186,15 +225,20 @@ impl<'a, R: AsyncRead + Unpin> Decoder<'a, R> {
     async fn deserialize(mut self) -> Result<()> {
         self.expect_dictionary().await?;
 
+        // The first section should always be a config section.
+        let key = self.expect_string().await?;
+        if key.as_slice() != b"config" {
+            bail!("expected the first section to be config, found {key:?}");
+        }
+        self.deserialize_config()
+            .await
+            .context("deserialize_config")?;
+
+        // Read remaining sections.
         loop {
             let token = self.expect_token().await?;
             match token {
                 BencodeToken::ByteString(key) => match key.as_slice() {
-                    b"config" => {
-                        self.deserialize_config()
-                            .await
-                            .context("deserialize_config")?;
-                    }
                     b"contacts" => {
                         self.expect_list().await?;
                         self.skip_until_end().await?;
