@@ -11,6 +11,7 @@ use futures_lite::FutureExt;
 use rand::{thread_rng, Rng};
 use tokio::fs::{self, File};
 use tokio_tar::Archive;
+use tokio::io::BufWriter;
 
 use crate::blob::{BlobDirContents, BlobObject};
 use crate::chat::{self, delete_and_reset_all_device_msgs, ChatId};
@@ -785,7 +786,7 @@ async fn export_database(context: &Context, dest: &Path, passphrase: String) -> 
 /// Serializes the database to a file.
 pub async fn serialize_database(context: &Context, filename: &str) -> Result<()> {
     let file = File::create(filename).await?;
-    context.sql.serialize(file).await?;
+    context.sql.serialize(BufWriter::new(file)).await?;
     Ok(())
 }
 

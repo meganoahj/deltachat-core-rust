@@ -903,6 +903,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         //
         // TODO insert welcome message on import like done in `delete_and_reset_all_device_msgs()`?
         self.w.write_all(b"e\n").await?;
+        self.w.flush().await?;
         Ok(())
     }
 }
