@@ -1409,6 +1409,7 @@ impl Chat {
     }
 
     /// Returns true if the chat is promoted.
+    /// This means a message has been sent to it and it _not_ only exists on the users device.
     pub fn is_promoted(&self) -> bool {
         !self.is_unpromoted()
     }
@@ -2977,6 +2978,7 @@ pub(crate) async fn remove_from_chat_contacts_table(
 }
 
 /// Adds a contact to the chat.
+/// If the group is promoted, also sends out a system message to all group members
 pub async fn add_contact_to_chat(
     context: &Context,
     chat_id: ChatId,
@@ -2998,7 +3000,7 @@ pub(crate) async fn add_contact_to_chat_ex(
 
     chat_id.reset_gossiped_timestamp(context).await?;
 
-    /*this also makes sure, not contacts are added to special or normal chats*/
+    // this also makes sure, no contacts are added to special or normal chats
     let mut chat = Chat::load_from_db(context, chat_id).await?;
     ensure!(
         chat.typ == Chattype::Group || chat.typ == Chattype::Broadcast,
@@ -3020,7 +3022,7 @@ pub(crate) async fn add_contact_to_chat_ex(
         context.emit_event(EventType::ErrorSelfNotInGroup(
             "Cannot add contact to group; self not in group.".into(),
         ));
-        bail!("can not add contact because our account is not part of it");
+        bail!("can not add contact because the account is not part of the group/broadcast");
     }
 
     if from_handshake && chat.param.get_int(Param::Unpromoted).unwrap_or_default() == 1 {
@@ -4195,6 +4197,45 @@ mod tests {
         // Eventually, first removal message arrives.
         // This has no effect.
         bob.recv_msg(&remove1).await;
+        assert_eq!(get_chat_contacts(&bob, bob_chat_id).await?.len(), 2);
+        Ok(())
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn test_sync_member_list_on_rejoin() -> Result<()> {
+        let mut tcm = TestContextManager::new();
+        let alice = tcm.alice().await;
+
+        let bob_id = Contact::create(&alice, "", "bob@example.net").await?;
+        let claire_id = Contact::create(&alice, "", "claire@example.de").await?;
+
+        let alice_chat_id =
+            create_group_chat(&alice, ProtectionStatus::Unprotected, "foos").await?;
+        add_contact_to_chat(&alice, alice_chat_id, bob_id).await?;
+        add_contact_to_chat(&alice, alice_chat_id, claire_id).await?;
+
+        send_text_msg(&alice, alice_chat_id, "populate".to_string()).await?;
+        let add = alice.pop_sent_msg().await;
+        let bob = tcm.bob().await;
+        bob.recv_msg(&add).await;
+        let bob_chat_id = bob.get_last_msg().await.chat_id;
+        assert_eq!(get_chat_contacts(&bob, bob_chat_id).await?.len(), 3);
+
+        // remove bob from chat
+        remove_contact_from_chat(&alice, alice_chat_id, bob_id).await?;
+        let remove_bob = alice.pop_sent_msg().await;
+        bob.recv_msg(&remove_bob).await;
+
+        // remove any other member
+        remove_contact_from_chat(&alice, alice_chat_id, claire_id).await?;
+        alice.pop_sent_msg().await;
+
+        // readd bob
+        add_contact_to_chat(&alice, alice_chat_id, bob_id).await?;
+        let add2 = alice.pop_sent_msg().await;
+        bob.recv_msg(&add2).await;
+
+        // number of members in chat should have updated
         assert_eq!(get_chat_contacts(&bob, bob_chat_id).await?.len(), 2);
         Ok(())
     }
