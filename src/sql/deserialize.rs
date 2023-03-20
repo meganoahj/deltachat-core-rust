@@ -4,6 +4,7 @@ use std::str::FromStr;
 
 use anyhow::{anyhow, bail, Context as _, Result};
 use bstr::BString;
+use rusqlite::Transaction;
 use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncReadExt, BufReader};
 
 use super::Sql;
@@ -100,14 +101,16 @@ impl<R: AsyncRead + Unpin> BencodeTokenizer<R> {
     }
 }
 
-struct Decoder<R: AsyncRead + Unpin> {
+struct Decoder<'a, R: AsyncRead + Unpin> {
+    tx: Transaction<'a>,
+
     tokenizer: BencodeTokenizer<R>,
 }
 
-impl<R: AsyncRead + Unpin> Decoder<R> {
-    fn new(r: R) -> Self {
+impl<'a, R: AsyncRead + Unpin> Decoder<'a, R> {
+    fn new(tx: Transaction<'a>, r: R) -> Self {
         let tokenizer = BencodeTokenizer::new(r);
-        Self { tokenizer }
+        Self { tx, tokenizer }
     }
 
     /// Expects a token.
@@ -180,7 +183,7 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
         }
     }
 
-    async fn deserialize(&mut self) -> Result<()> {
+    async fn deserialize(mut self) -> Result<()> {
         self.expect_dictionary().await?;
 
         loop {
@@ -208,6 +211,9 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
                 }
             }
         }
+
+        // TODO: uncomment
+        //self.tx.commit()?;
         Ok(())
     }
 }
@@ -215,8 +221,14 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
 impl Sql {
     /// Deserializes the database from a bytestream.
     pub async fn deserialize(&self, r: impl AsyncRead + Unpin) -> Result<()> {
-        let mut decoder = Decoder::new(r);
+        let mut conn = self.get_connection().await?;
+
+        // Start a write transaction to take a database snapshot.
+        let transaction = conn.transaction()?;
+
+        let decoder = Decoder::new(transaction, r);
         decoder.deserialize().await?;
+
         Ok(())
     }
 }
