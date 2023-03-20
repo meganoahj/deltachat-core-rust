@@ -10,8 +10,8 @@ use futures::StreamExt;
 use futures_lite::FutureExt;
 use rand::{thread_rng, Rng};
 use tokio::fs::{self, File};
-use tokio_tar::Archive;
 use tokio::io::BufWriter;
+use tokio_tar::Archive;
 
 use crate::blob::{BlobDirContents, BlobObject};
 use crate::chat::{self, delete_and_reset_all_device_msgs, ChatId};
