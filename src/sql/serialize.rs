@@ -650,6 +650,35 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         Ok(())
     }
 
+    async fn serialize_msgs_status_updates(&mut self) -> Result<()> {
+        let mut stmt = self
+            .tx
+            .prepare("SELECT id, msg_id, update_item FROM msgs_status_updates")?;
+        let mut rows = stmt.query(())?;
+
+        self.w.write_all(b"l\n").await?;
+        while let Some(row) = rows.next()? {
+            let id: i64 = row.get("id")?;
+            let msg_id: i64 = row.get("msg_id")?;
+            let update_item: String = row.get("update_item")?;
+
+            self.w.write_all(b"d\n").await?;
+
+            write_str(&mut self.w, "id").await?;
+            write_i64(&mut self.w, id).await?;
+
+            write_str(&mut self.w, "msg_id").await?;
+            write_i64(&mut self.w, msg_id).await?;
+
+            write_str(&mut self.w, "update_item").await?;
+            write_str(&mut self.w, &update_item).await?;
+
+            self.w.write_all(b"e\n").await?;
+        }
+        self.w.write_all(b"e\n").await?;
+        Ok(())
+    }
+
     async fn serialize_acpeerstates(&mut self) -> Result<()> {
         let mut stmt = self.tx.prepare("SELECT id, addr, last_seen, last_seen_autocrypt, public_key, prefer_encrypted, gossip_timestamp, gossip_key, public_key_fingerprint, gossip_key_fingerprint, verified_key, verified_key_fingerprint FROM acpeerstates")?;
         let mut rows = stmt.query(())?;
@@ -843,7 +872,10 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             .await
             .context("serialize sending_domains")?;
 
-        // TODO msgs_status_updates
+        write_str(&mut self.w, "msgs_status_updates").await?;
+        self.serialize_msgs_status_updates()
+            .await
+            .context("serialize msgs_status_updates")?;
 
         write_str(&mut self.w, "acpeerstates").await?;
         self.serialize_acpeerstates()
