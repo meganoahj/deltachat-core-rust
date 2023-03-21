@@ -1771,7 +1771,7 @@ impl Session {
                     ) => {}
 
                 _ => {
-                    info!(context, "ignoring unsolicited response {:?}", response)
+                    info!(context, "got unsolicited response {:?}", response)
                 }
             }
         }
