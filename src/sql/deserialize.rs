@@ -101,16 +101,14 @@ impl<R: AsyncRead + Unpin> BencodeTokenizer<R> {
     }
 }
 
-struct Decoder<'a, R: AsyncRead + Unpin> {
-    tx: Transaction<'a>,
-
+struct Decoder<R: AsyncRead + Unpin> {
     tokenizer: BencodeTokenizer<R>,
 }
 
-impl<'a, R: AsyncRead + Unpin> Decoder<'a, R> {
-    fn new(tx: Transaction<'a>, r: R) -> Self {
+impl<R: AsyncRead + Unpin> Decoder<R> {
+    fn new(r: R) -> Self {
         let tokenizer = BencodeTokenizer::new(r);
-        Self { tx, tokenizer }
+        Self { tokenizer }
     }
 
     /// Expects a token.
@@ -158,8 +156,10 @@ impl<'a, R: AsyncRead + Unpin> Decoder<'a, R> {
         }
     }
 
-    async fn deserialize_config(&mut self) -> Result<()> {
+    async fn deserialize_config(&mut self, tx: Transaction<'_>) -> Result<()> {
         let mut dbversion_found = false;
+
+        let mut stmt = tx.prepare("INSERT INTO config (keyname, value) VALUES (?, ?)")?;
 
         self.expect_dictionary().await?;
         loop {
@@ -180,6 +180,8 @@ impl<'a, R: AsyncRead + Unpin> Decoder<'a, R> {
                             bail!("unsupported serialized database version {value:?}, expected 99");
                         }
                     }
+
+                    stmt.execute([key.as_slice(), value.as_slice()])?;
                 }
                 BencodeToken::End => break,
                 t => return Err(anyhow!("unexpected token {t:?}, expected config key")),
@@ -222,7 +224,7 @@ impl<'a, R: AsyncRead + Unpin> Decoder<'a, R> {
         }
     }
 
-    async fn deserialize(mut self) -> Result<()> {
+    async fn deserialize(mut self, tx: Transaction<'_>) -> Result<()> {
         self.expect_dictionary().await?;
 
         // The first section should always be a config section.
@@ -230,7 +232,7 @@ impl<'a, R: AsyncRead + Unpin> Decoder<'a, R> {
         if key.as_slice() != b"config" {
             bail!("expected the first section to be config, found {key:?}");
         }
-        self.deserialize_config()
+        self.deserialize_config(tx)
             .await
             .context("deserialize_config")?;
 
@@ -270,8 +272,8 @@ impl Sql {
         // Start a write transaction to take a database snapshot.
         let transaction = conn.transaction()?;
 
-        let decoder = Decoder::new(transaction, r);
-        decoder.deserialize().await?;
+        let decoder = Decoder::new(r);
+        decoder.deserialize(transaction).await?;
 
         Ok(())
     }
