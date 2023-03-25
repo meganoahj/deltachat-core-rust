@@ -156,6 +156,27 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
         }
     }
 
+    async fn expect_key(&mut self, expected_key: &[u8]) -> Result<()> {
+        let key = self.expect_string().await?;
+        if key.as_slice() != expected_key {
+            bail!("expected key {expected_key:?}, found {key:?}");
+        }
+        Ok(())
+    }
+
+    async fn expect_i64(&mut self) -> Result<i64> {
+        let token = self.expect_token().await?;
+        match token {
+            BencodeToken::Integer(i) => Ok(i),
+            t => Err(anyhow!("unexpected token {t:?}, expected integer")),
+        }
+    }
+
+    async fn expect_u32(&mut self) -> Result<u32> {
+        let i = u32::try_from(self.expect_i64().await?).context("failed to convert to u32")?;
+        Ok(i)
+    }
+
     async fn deserialize_config(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
         let mut dbversion_found = false;
 
@@ -196,71 +217,118 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
 
     async fn deserialize_contacts(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
         self.expect_list().await?;
-        self.skip_until_end().await?;
+        loop {
+            let token = self.expect_token().await?;
+            match token {
+                BencodeToken::Dictionary => {
+                    self.expect_key(b"id").await?;
+                    let _id = self.expect_u32().await?;
+                    self.skip_until_end().await?;
+                }
+                BencodeToken::End => break,
+                t => {
+                    return Err(anyhow!(
+                        "unexpected token {t:?}, expected contact dictionary or end of list"
+                    ))
+                }
+            }
+        }
         Ok(())
     }
 
     async fn deserialize_chats(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
         Ok(())
     }
 
     async fn deserialize_leftgroups(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
         Ok(())
     }
 
     async fn deserialize_keypairs(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
         Ok(())
     }
 
     async fn deserialize_messages(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
         Ok(())
     }
 
     async fn deserialize_mdns(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
         Ok(())
     }
 
     async fn deserialize_reactions(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
         Ok(())
     }
 
     async fn deserialize_tokens(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
         Ok(())
     }
 
     async fn deserialize_locations(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
         Ok(())
     }
 
     async fn deserialize_imap(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
         Ok(())
     }
 
     async fn deserialize_imap_sync(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
         Ok(())
     }
 
     async fn deserialize_multi_device_sync(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
         Ok(())
     }
 
     async fn deserialize_sending_domains(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
         Ok(())
     }
 
     async fn deserialize_msgs_status_updates(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
         Ok(())
     }
 
     async fn deserialize_acpeerstates(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
         Ok(())
     }
 
     async fn deserialize_chats_contacts(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
         Ok(())
     }
 
     async fn deserialize_dns_cache(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
         Ok(())
     }
 
@@ -298,10 +366,7 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
         self.expect_dictionary().await?;
 
         // The first section should always be a config section.
-        let key = self.expect_string().await?;
-        if key.as_slice() != b"config" {
-            bail!("expected the first section to be config, found {key:?}");
-        }
+        self.expect_key(b"config").await?;
         self.deserialize_config(&mut tx)
             .await
             .context("deserialize_config")?;
