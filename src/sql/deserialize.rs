@@ -31,15 +31,31 @@ enum BencodeToken {
 /// Tokenizer for bencoded stream.
 struct BencodeTokenizer<R: AsyncRead + Unpin> {
     r: BufReader<R>,
+
+    peeked_token: Option<BencodeToken>,
 }
 
 impl<R: AsyncRead + Unpin> BencodeTokenizer<R> {
     fn new(r: R) -> Self {
         let r = BufReader::new(r);
-        Self { r }
+        Self {
+            r,
+            peeked_token: None,
+        }
+    }
+
+    async fn peek_token(&mut self) -> Result<Option<&BencodeToken>> {
+        if self.peeked_token.is_none() {
+            self.peeked_token = self.next_token().await?;
+        }
+        Ok(self.peeked_token.as_ref())
     }
 
     async fn next_token(&mut self) -> Result<Option<BencodeToken>> {
+        if let Some(token) = self.peeked_token.take() {
+            return Ok(Some(token));
+        }
+
         loop {
             let buf = self.r.fill_buf().await?;
             match buf.first() {
@@ -123,6 +139,16 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
         Ok(token)
     }
 
+    /// Expects a token without consuming it.
+    async fn peek_token(&mut self) -> Result<&BencodeToken> {
+        let token = self
+            .tokenizer
+            .peek_token()
+            .await?
+            .context("unexpected end of file")?;
+        Ok(token)
+    }
+
     /// Tries to read a dictionary token.
     ///
     /// Returns an error on EOF or unexpected token.
@@ -130,6 +156,20 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
         match self.expect_token().await? {
             BencodeToken::Dictionary => Ok(()),
             token => Err(anyhow!("unexpected token {token:?}, expected dictionary")),
+        }
+    }
+
+    /// Tries to read a dictionary or end token.
+    ///
+    /// Returns true if the dictionary starts and false if the end is detected.
+    /// Returns an error on EOF or unexpected token.
+    async fn expect_dictionary_opt(&mut self) -> Result<bool> {
+        match self.expect_token().await? {
+            BencodeToken::Dictionary => Ok(true),
+            BencodeToken::End => Ok(false),
+            token => Err(anyhow!(
+                "unexpected token {token:?}, expected dictionary or end"
+            )),
         }
     }
 
@@ -156,25 +196,30 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
     /// Tries to read a string dictionary key.
     ///
     /// Returns `None` if the end of dictionary is reached.
-    async fn expect_key(&mut self) -> Result<Option<BString>> {
+    async fn expect_key(&mut self, expected_key: &str) -> Result<()> {
         match self.expect_token().await? {
-            BencodeToken::ByteString(key) => Ok(Some(key)),
-            BencodeToken::End => Ok(None),
+            BencodeToken::ByteString(key) => {
+                if key.as_slice() == expected_key.as_bytes() {
+                    Ok(())
+                } else {
+                    Err(anyhow!("unexpected key {key}, expected key {expected_key}"))
+                }
+            }
             token => Err(anyhow!("unexpected token {token:?}, expected string")),
         }
     }
 
-    async fn expect_fixed_key(&mut self, expected_key: &str) -> Result<()> {
-        if let Some(key) = self.expect_key().await? {
-            if key.as_slice() == expected_key.as_bytes() {
-                Ok(())
-            } else {
-                Err(anyhow!("unexpected key {key}, expected key {expected_key}"))
+    async fn expect_key_opt(&mut self, expected_key: &str) -> Result<bool> {
+        match self.peek_token().await? {
+            BencodeToken::ByteString(key) => {
+                if key.as_slice() == expected_key.as_bytes() {
+                    Ok(true)
+                } else {
+                    Ok(false)
+                }
             }
-        } else {
-            Err(anyhow!(
-                "unexpected end of dictionary, expected key {expected_key}"
-            ))
+            BencodeToken::End => Ok(false),
+            token => Err(anyhow!("unexpected token {token:?}, expected string")),
         }
     }
 
@@ -231,7 +276,25 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
 
     async fn deserialize_acpeerstates(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
         self.expect_list().await?;
-        self.skip_until_end().await?;
+        while self.expect_dictionary_opt().await? {
+            self.expect_key("addr").await?;
+            let addr = self.expect_string().await?;
+
+            let gossip_key = if self.expect_key_opt("gossip_key").await? {
+                Some(self.expect_string().await?)
+            } else {
+                None
+            };
+
+            let gossip_key_fingerprint = if self.expect_key_opt("gossip_key_fingerprint").await? {
+                Some(self.expect_string().await?)
+            } else {
+                None
+            };
+
+            self.expect_key("gossip_timestamp").await?;
+            let gossip_timestamp = self.expect_i64().await?;
+        }
         Ok(())
     }
 
@@ -249,37 +312,7 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
 
     async fn deserialize_contacts(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
         self.expect_list().await?;
-        loop {
-            match self.expect_token().await? {
-                BencodeToken::Dictionary => {
-                    self.expect_fixed_key("id").await?;
-                    let id = self.expect_u32().await?;
-
-                    let mut name = None;
-                    let mut authname = None;
-                    let mut addr = None;
-                    while let Some(key) = self.expect_key().await? {
-                        match key.as_slice() {
-                            b"name" => {
-                                name = Some(self.expect_string().await?);
-                            }
-                            b"authname" => {
-                                authname = Some(self.expect_string().await?);
-                            }
-                            b"addr" => {
-                                addr = Some(self.expect_string().await?);
-                            }
-                        }
-                    }
-                }
-                BencodeToken::End => break,
-                token => {
-                    return Err(anyhow!(
-                        "unexpected token {token:?}, expected contact dictionary or end of list"
-                    ))
-                }
-            }
-        }
+        self.skip_until_end().await?;
         Ok(())
     }
 
@@ -393,92 +426,92 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
     async fn deserialize(mut self, mut tx: Transaction<'_>) -> Result<()> {
         self.expect_dictionary().await?;
 
-        self.expect_fixed_key("_config").await?;
+        self.expect_key("_config").await?;
         self.deserialize_config(&mut tx)
             .await
             .context("deserialize_config")?;
 
-        self.expect_fixed_key("acpeerstates").await?;
+        self.expect_key("acpeerstates").await?;
         self.deserialize_acpeerstates(&mut tx)
             .await
             .context("deserialize_acpeerstates")?;
 
-        self.expect_fixed_key("chats").await?;
+        self.expect_key("chats").await?;
         self.deserialize_chats(&mut tx)
             .await
             .context("deserialize_chats")?;
 
-        self.expect_fixed_key("chats_contacts").await?;
+        self.expect_key("chats_contacts").await?;
         self.deserialize_chats_contacts(&mut tx)
             .await
             .context("deserialize_chats_contacts")?;
 
-        self.expect_fixed_key("contacts").await?;
+        self.expect_key("contacts").await?;
         self.deserialize_contacts(&mut tx)
             .await
             .context("deserialize_contacts")?;
 
-        self.expect_fixed_key("dns_cache").await?;
+        self.expect_key("dns_cache").await?;
         self.deserialize_dns_cache(&mut tx)
             .await
             .context("deserialize_dns_cache")?;
 
-        self.expect_fixed_key("imap").await?;
+        self.expect_key("imap").await?;
         self.deserialize_imap(&mut tx)
             .await
             .context("deserialize_imap")?;
 
-        self.expect_fixed_key("imap_sync").await?;
+        self.expect_key("imap_sync").await?;
         self.deserialize_imap_sync(&mut tx)
             .await
             .context("deserialize_imap_sync")?;
 
-        self.expect_fixed_key("keypairs").await?;
+        self.expect_key("keypairs").await?;
         self.deserialize_keypairs(&mut tx)
             .await
             .context("deserialize_keypairs")?;
 
-        self.expect_fixed_key("leftgroups").await?;
+        self.expect_key("leftgroups").await?;
         self.deserialize_leftgroups(&mut tx)
             .await
             .context("deserialize_leftgroups")?;
 
-        self.expect_fixed_key("locations").await?;
+        self.expect_key("locations").await?;
         self.deserialize_locations(&mut tx)
             .await
             .context("deserialize_locations")?;
 
-        self.expect_fixed_key("mdns").await?;
+        self.expect_key("mdns").await?;
         self.deserialize_mdns(&mut tx)
             .await
             .context("deserialize_mdns")?;
 
-        self.expect_fixed_key("messages").await?;
+        self.expect_key("messages").await?;
         self.deserialize_messages(&mut tx)
             .await
             .context("deserialize_messages")?;
 
-        self.expect_fixed_key("msgs_status_updates").await?;
+        self.expect_key("msgs_status_updates").await?;
         self.deserialize_msgs_status_updates(&mut tx)
             .await
             .context("deserialize_msgs_status_updates")?;
 
-        self.expect_fixed_key("multi_device_sync").await?;
+        self.expect_key("multi_device_sync").await?;
         self.deserialize_multi_device_sync(&mut tx)
             .await
             .context("deserialize_multi_device_sync")?;
 
-        self.expect_fixed_key("reactions").await?;
+        self.expect_key("reactions").await?;
         self.deserialize_reactions(&mut tx)
             .await
             .context("deserialize_reactions")?;
 
-        self.expect_fixed_key("sending_domains").await?;
+        self.expect_key("sending_domains").await?;
         self.deserialize_sending_domains(&mut tx)
             .await
             .context("deserialize_sending_domains")?;
 
-        self.expect_fixed_key("tokens").await?;
+        self.expect_key("tokens").await?;
         self.deserialize_tokens(&mut tx)
             .await
             .context("deserialize_tokens")?;
