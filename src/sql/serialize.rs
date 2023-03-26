@@ -82,6 +82,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
 
     /// Serializes `config` table.
     async fn serialize_config(&mut self) -> Result<()> {
+        // FIXME: sort the dictionary in lexicographical order
+        // dbversion should be the first, so store it as "_config._dbversion"
+
         let mut stmt = self.tx.prepare("SELECT keyname,value FROM config")?;
         let mut rows = stmt.query(())?;
         self.w.write_all(b"d\n").await?;
