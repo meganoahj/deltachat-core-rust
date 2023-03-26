@@ -127,10 +127,9 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
     ///
     /// Returns an error on EOF or unexpected token.
     async fn expect_dictionary(&mut self) -> Result<()> {
-        let token = self.expect_token().await?;
-        match token {
+        match self.expect_token().await? {
             BencodeToken::Dictionary => Ok(()),
-            t => Err(anyhow!("unexpected token {t:?}, expected dictionary")),
+            token => Err(anyhow!("unexpected token {token:?}, expected dictionary")),
         }
     }
 
@@ -138,10 +137,9 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
     ///
     /// Returns an error on EOF or unexpected token.
     async fn expect_list(&mut self) -> Result<()> {
-        let token = self.expect_token().await?;
-        match token {
+        match self.expect_token().await? {
             BencodeToken::List => Ok(()),
-            t => Err(anyhow!("unexpected token {t:?}, expected list")),
+            token => Err(anyhow!("unexpected token {token:?}, expected list")),
         }
     }
 
@@ -149,19 +147,35 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
     ///
     /// Returns an error on EOF or unexpected token.
     async fn expect_string(&mut self) -> Result<BString> {
-        let token = self.expect_token().await?;
-        match token {
+        match self.expect_token().await? {
             BencodeToken::ByteString(s) => Ok(s),
-            t => Err(anyhow!("unexpected token {t:?}, expected list")),
+            token => Err(anyhow!("unexpected token {token:?}, expected list")),
         }
     }
 
-    async fn expect_key(&mut self, expected_key: &[u8]) -> Result<()> {
-        let key = self.expect_string().await?;
-        if key.as_slice() != expected_key {
-            bail!("expected key {expected_key:?}, found {key:?}");
+    /// Tries to read a string dictionary key.
+    ///
+    /// Returns `None` if the end of dictionary is reached.
+    async fn expect_key(&mut self) -> Result<Option<BString>> {
+        match self.expect_token().await? {
+            BencodeToken::ByteString(key) => Ok(Some(key)),
+            BencodeToken::End => Ok(None),
+            token => Err(anyhow!("unexpected token {token:?}, expected string")),
         }
-        Ok(())
+    }
+
+    async fn expect_fixed_key(&mut self, expected_key: &str) -> Result<()> {
+        if let Some(key) = self.expect_key().await? {
+            if key.as_slice() == expected_key.as_bytes() {
+                Ok(())
+            } else {
+                Err(anyhow!("unexpected key {key}, expected key {expected_key}"))
+            }
+        } else {
+            Err(anyhow!(
+                "unexpected end of dictionary, expected key {expected_key}"
+            ))
+        }
     }
 
     async fn expect_i64(&mut self) -> Result<i64> {
@@ -218,17 +232,32 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
     async fn deserialize_contacts(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
         self.expect_list().await?;
         loop {
-            let token = self.expect_token().await?;
-            match token {
+            match self.expect_token().await? {
                 BencodeToken::Dictionary => {
-                    self.expect_key(b"id").await?;
-                    let _id = self.expect_u32().await?;
-                    self.skip_until_end().await?;
+                    self.expect_fixed_key("id").await?;
+                    let id = self.expect_u32().await?;
+
+                    let mut name = None;
+                    let mut authname = None;
+                    let mut addr = None;
+                    while let Some(key) = self.expect_key().await? {
+                        match key.as_slice() {
+                            b"name" => {
+                                name = Some(self.expect_string().await?);
+                            }
+                            b"authname" => {
+                                authname = Some(self.expect_string().await?);
+                            }
+                            b"addr" => {
+                                addr = Some(self.expect_string().await?);
+                            }
+                        }
+                    }
                 }
                 BencodeToken::End => break,
-                t => {
+                token => {
                     return Err(anyhow!(
-                        "unexpected token {t:?}, expected contact dictionary or end of list"
+                        "unexpected token {token:?}, expected contact dictionary or end of list"
                     ))
                 }
             }
@@ -366,7 +395,7 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
         self.expect_dictionary().await?;
 
         // The first section should always be a config section.
-        self.expect_key(b"config").await?;
+        self.expect_fixed_key("config").await?;
         self.deserialize_config(&mut tx)
             .await
             .context("deserialize_config")?;
