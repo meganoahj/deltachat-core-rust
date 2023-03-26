@@ -86,10 +86,6 @@ impl<R: AsyncRead + Unpin> BencodeTokenizer<R> {
                         return Ok(Some(BencodeToken::Integer(num)));
                     }
                 }
-                Some(b'\n') => {
-                    // Newlines are skipped.
-                    self.r.consume(1);
-                }
                 Some(&x) => {
                     if x.is_ascii_digit() {
                         let mut size_buf = Vec::new();

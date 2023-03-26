@@ -2,8 +2,7 @@
 //!
 //! The module contains functions to serialize database into a stream.
 //!
-//! Output format is based on [bencoding](http://bittorrent.org/beps/bep_0003.html)
-//! with newlines added for better readability.
+//! Output format is based on [bencoding](http://bittorrent.org/beps/bep_0003.html).
 
 /// Database version supported by the current serialization code.
 ///
@@ -36,7 +35,6 @@ async fn write_bytes(w: &mut (impl AsyncWrite + Unpin), b: &[u8]) -> Result<()> 
     let bytes_len = format!("{}:", b.len());
     w.write_all(bytes_len.as_bytes()).await?;
     w.write_all(b).await?;
-    w.write_all(b"\n").await?;
     Ok(())
 }
 
@@ -49,7 +47,7 @@ async fn write_i64(w: &mut (impl AsyncWrite + Unpin), i: i64) -> Result<()> {
     let s = format!("{i}");
     w.write_all(b"i").await?;
     w.write_all(s.as_bytes()).await?;
-    w.write_all(b"e\n").await?;
+    w.write_all(b"e").await?;
     Ok(())
 }
 
@@ -57,7 +55,7 @@ async fn write_u32(w: &mut (impl AsyncWrite + Unpin), i: u32) -> Result<()> {
     let s = format!("{i}");
     w.write_all(b"i").await?;
     w.write_all(s.as_bytes()).await?;
-    w.write_all(b"e\n").await?;
+    w.write_all(b"e").await?;
     Ok(())
 }
 
@@ -68,9 +66,9 @@ async fn write_f64(w: &mut (impl AsyncWrite + Unpin), f: f64) -> Result<()> {
 
 async fn write_bool(w: &mut (impl AsyncWrite + Unpin), b: bool) -> Result<()> {
     if b {
-        w.write_all(b"i1e\n").await?;
+        w.write_all(b"i1e").await?;
     } else {
-        w.write_all(b"i0e\n").await?;
+        w.write_all(b"i0e").await?;
     }
     Ok(())
 }
@@ -87,14 +85,14 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
 
         let mut stmt = self.tx.prepare("SELECT keyname,value FROM config")?;
         let mut rows = stmt.query(())?;
-        self.w.write_all(b"d\n").await?;
+        self.w.write_all(b"d").await?;
         while let Some(row) = rows.next()? {
             let keyname: String = row.get(0)?;
             let value: String = row.get(1)?;
             write_str(&mut self.w, &keyname).await?;
             write_str(&mut self.w, &value).await?;
         }
-        self.w.write_all(b"e\n").await?;
+        self.w.write_all(b"e").await?;
         Ok(())
     }
 
@@ -102,7 +100,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         let mut stmt = self.tx.prepare("SELECT id, addr, last_seen, last_seen_autocrypt, public_key, prefer_encrypted, gossip_timestamp, gossip_key, public_key_fingerprint, gossip_key_fingerprint, verified_key, verified_key_fingerprint FROM acpeerstates")?;
         let mut rows = stmt.query(())?;
 
-        self.w.write_all(b"l\n").await?;
+        self.w.write_all(b"l").await?;
         while let Some(row) = rows.next()? {
             let addr: String = row.get("addr")?;
             let prefer_encrypted: i64 = row.get("prefer_encrypted")?;
@@ -120,7 +118,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             let verified_key: Option<Vec<u8>> = row.get("verified_key")?;
             let verified_key_fingerprint: Option<String> = row.get("verified_key_fingerprint")?;
 
-            self.w.write_all(b"d\n").await?;
+            self.w.write_all(b"d").await?;
 
             write_str(&mut self.w, "addr").await?;
             write_str(&mut self.w, &addr).await?;
@@ -167,9 +165,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
                 write_str(&mut self.w, &verified_key_fingerprint).await?;
             }
 
-            self.w.write_all(b"e\n").await?;
+            self.w.write_all(b"e").await?;
         }
-        self.w.write_all(b"e\n").await?;
+        self.w.write_all(b"e").await?;
         Ok(())
     }
 
@@ -195,12 +193,12 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         )?;
         let mut rows = stmt.query(())?;
 
-        self.w.write_all(b"l\n").await?;
+        self.w.write_all(b"l").await?;
         while let Some(row) = rows.next()? {
             let id: ChatId = row.get("id")?;
             let typ: Chattype = row.get("type")?;
 
-            self.w.write_all(b"d\n").await?;
+            self.w.write_all(b"d").await?;
             write_str(&mut self.w, "id").await?;
             write_u32(&mut self.w, id.to_u32()).await?;
 
@@ -209,9 +207,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
                 write_u32(&mut self.w, typ).await?;
             }
 
-            self.w.write_all(b"e\n").await?;
+            self.w.write_all(b"e").await?;
         }
-        self.w.write_all(b"e\n").await?;
+        self.w.write_all(b"e").await?;
         Ok(())
     }
 
@@ -221,12 +219,12 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             .prepare("SELECT chat_id, contact_id FROM chats_contacts")?;
         let mut rows = stmt.query(())?;
 
-        self.w.write_all(b"l\n").await?;
+        self.w.write_all(b"l").await?;
         while let Some(row) = rows.next()? {
             let chat_id: u32 = row.get("chat_id")?;
             let contact_id: u32 = row.get("contact_id")?;
 
-            self.w.write_all(b"d\n").await?;
+            self.w.write_all(b"d").await?;
 
             write_str(&mut self.w, "chat_id").await?;
             write_u32(&mut self.w, chat_id).await?;
@@ -234,9 +232,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             write_str(&mut self.w, "contact_id").await?;
             write_u32(&mut self.w, contact_id).await?;
 
-            self.w.write_all(b"e\n").await?;
+            self.w.write_all(b"e").await?;
         }
-        self.w.write_all(b"e\n").await?;
+        self.w.write_all(b"e").await?;
         Ok(())
     }
 
@@ -271,7 +269,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             let param: String = row.get("param")?;
             let status: Option<String> = row.get("status")?;
 
-            self.w.write_all(b"d\n").await?;
+            self.w.write_all(b"d").await?;
 
             write_str(&mut self.w, "addr").await?;
             write_str(&mut self.w, &addr).await?;
@@ -309,9 +307,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
                     write_str(&mut self.w, &status).await?;
                 }
             }
-            self.w.write_all(b"e\n").await?;
+            self.w.write_all(b"e").await?;
         }
-        self.w.write_all(b"e\n").await?;
+        self.w.write_all(b"e").await?;
         Ok(())
     }
 
@@ -321,13 +319,13 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             .prepare("SELECT hostname, address, timestamp FROM dns_cache")?;
         let mut rows = stmt.query(())?;
 
-        self.w.write_all(b"l\n").await?;
+        self.w.write_all(b"l").await?;
         while let Some(row) = rows.next()? {
             let hostname: String = row.get("hostname")?;
             let address: String = row.get("address")?;
             let timestamp: i64 = row.get("timestamp")?;
 
-            self.w.write_all(b"d\n").await?;
+            self.w.write_all(b"d").await?;
 
             write_str(&mut self.w, "address").await?;
             write_str(&mut self.w, &address).await?;
@@ -338,9 +336,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             write_str(&mut self.w, "timestamp").await?;
             write_i64(&mut self.w, timestamp).await?;
 
-            self.w.write_all(b"e\n").await?;
+            self.w.write_all(b"e").await?;
         }
-        self.w.write_all(b"e\n").await?;
+        self.w.write_all(b"e").await?;
         Ok(())
     }
 
@@ -350,7 +348,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             .prepare("SELECT id, rfc724_mid, folder, target, uid, uidvalidity FROM imap")?;
         let mut rows = stmt.query(())?;
 
-        self.w.write_all(b"l\n").await?;
+        self.w.write_all(b"l").await?;
         while let Some(row) = rows.next()? {
             let id: i64 = row.get("id")?;
             let rfc724_mid: String = row.get("rfc724_mid")?;
@@ -359,7 +357,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             let uid: i64 = row.get("uid")?;
             let uidvalidity: i64 = row.get("uidvalidity")?;
 
-            self.w.write_all(b"d\n").await?;
+            self.w.write_all(b"d").await?;
 
             write_str(&mut self.w, "folder").await?;
             write_str(&mut self.w, &folder).await?;
@@ -379,9 +377,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             write_str(&mut self.w, "uidvalidity").await?;
             write_i64(&mut self.w, uidvalidity).await?;
 
-            self.w.write_all(b"e\n").await?;
+            self.w.write_all(b"e").await?;
         }
-        self.w.write_all(b"e\n").await?;
+        self.w.write_all(b"e").await?;
         Ok(())
     }
 
@@ -391,14 +389,14 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             .prepare("SELECT folder, uidvalidity, uid_next, modseq FROM imap_sync")?;
         let mut rows = stmt.query(())?;
 
-        self.w.write_all(b"l\n").await?;
+        self.w.write_all(b"l").await?;
         while let Some(row) = rows.next()? {
             let folder: String = row.get("folder")?;
             let uidvalidity: i64 = row.get("uidvalidity")?;
             let uidnext: i64 = row.get("uid_next")?;
             let modseq: i64 = row.get("modseq")?;
 
-            self.w.write_all(b"d\n").await?;
+            self.w.write_all(b"d").await?;
 
             write_str(&mut self.w, "folder").await?;
             write_str(&mut self.w, &folder).await?;
@@ -412,9 +410,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             write_str(&mut self.w, "uidvalidity").await?;
             write_i64(&mut self.w, uidvalidity).await?;
 
-            self.w.write_all(b"e\n").await?;
+            self.w.write_all(b"e").await?;
         }
-        self.w.write_all(b"e\n").await?;
+        self.w.write_all(b"e").await?;
         Ok(())
     }
 
@@ -424,7 +422,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             .prepare("SELECT id,addr,is_default,private_key,public_key,created FROM keypairs")?;
         let mut rows = stmt.query(())?;
 
-        self.w.write_all(b"l\n").await?;
+        self.w.write_all(b"l").await?;
         while let Some(row) = rows.next()? {
             let id: u32 = row.get("id")?;
             let addr: String = row.get("addr")?;
@@ -434,7 +432,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             let public_key: Vec<u8> = row.get("public_key")?;
             let created: i64 = row.get("created")?;
 
-            self.w.write_all(b"d\n").await?;
+            self.w.write_all(b"d").await?;
 
             write_str(&mut self.w, "created").await?;
             write_i64(&mut self.w, created).await?;
@@ -454,9 +452,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             write_str(&mut self.w, "type").await?;
             write_str(&mut self.w, &addr).await?;
 
-            self.w.write_all(b"e\n").await?;
+            self.w.write_all(b"e").await?;
         }
-        self.w.write_all(b"e\n").await?;
+        self.w.write_all(b"e").await?;
         Ok(())
     }
 
@@ -469,7 +467,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             let grpid: String = row.get("grpid")?;
             write_str(&mut self.w, &grpid).await?;
         }
-        self.w.write_all(b"e\n").await?;
+        self.w.write_all(b"e").await?;
         Ok(())
     }
 
@@ -479,7 +477,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             .prepare("SELECT id, latitude, longitude, accuracy, timestamp, chat_id, from_id, independent FROM locations")?;
         let mut rows = stmt.query(())?;
 
-        self.w.write_all(b"l\n").await?;
+        self.w.write_all(b"l").await?;
         while let Some(row) = rows.next()? {
             let id: i64 = row.get("id")?;
             let latitude: f64 = row.get("latitude")?;
@@ -489,7 +487,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             let chat_id: u32 = row.get("chat_id")?;
             let from_id: u32 = row.get("from_id")?;
 
-            self.w.write_all(b"d\n").await?;
+            self.w.write_all(b"d").await?;
 
             write_str(&mut self.w, "accuracy").await?;
             write_f64(&mut self.w, accuracy).await?;
@@ -512,9 +510,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             write_str(&mut self.w, "timestamp").await?;
             write_i64(&mut self.w, timestamp).await?;
 
-            self.w.write_all(b"e\n").await?;
+            self.w.write_all(b"e").await?;
         }
-        self.w.write_all(b"e\n").await?;
+        self.w.write_all(b"e").await?;
         Ok(())
     }
 
@@ -525,13 +523,13 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             .prepare("SELECT msg_id, contact_id, timestamp_sent FROM msgs_mdns")?;
         let mut rows = stmt.query(())?;
 
-        self.w.write_all(b"l\n").await?;
+        self.w.write_all(b"l").await?;
         while let Some(row) = rows.next()? {
             let msg_id: u32 = row.get("msg_id")?;
             let contact_id: u32 = row.get("contact_id")?;
             let timestamp_sent: i64 = row.get("timestamp_sent")?;
 
-            self.w.write_all(b"d\n").await?;
+            self.w.write_all(b"d").await?;
 
             write_str(&mut self.w, "contact_id").await?;
             write_u32(&mut self.w, contact_id).await?;
@@ -542,9 +540,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             write_str(&mut self.w, "timestamp_sent").await?;
             write_i64(&mut self.w, timestamp_sent).await?;
 
-            self.w.write_all(b"e\n").await?;
+            self.w.write_all(b"e").await?;
         }
-        self.w.write_all(b"e\n").await?;
+        self.w.write_all(b"e").await?;
         Ok(())
     }
 
@@ -574,7 +572,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         )?;
         let mut rows = stmt.query(())?;
 
-        self.w.write_all(b"l\n").await?;
+        self.w.write_all(b"l").await?;
         while let Some(row) = rows.next()? {
             let id: i64 = row.get("id")?;
             let rfc724_mid: String = row.get("rfc724_mid")?;
@@ -604,7 +602,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             let mime_references: Option<String> = row.get("mime_references")?;
             let location_id: i64 = row.get("location_id")?;
 
-            self.w.write_all(b"d\n").await?;
+            self.w.write_all(b"d").await?;
 
             write_str(&mut self.w, "bytes").await?;
             write_i64(&mut self.w, bytes).await?;
@@ -671,9 +669,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             write_str(&mut self.w, "type").await?;
             write_i64(&mut self.w, typ).await?;
 
-            self.w.write_all(b"e\n").await?;
+            self.w.write_all(b"e").await?;
         }
-        self.w.write_all(b"e\n").await?;
+        self.w.write_all(b"e").await?;
         Ok(())
     }
 
@@ -683,13 +681,13 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             .prepare("SELECT id, msg_id, update_item FROM msgs_status_updates")?;
         let mut rows = stmt.query(())?;
 
-        self.w.write_all(b"l\n").await?;
+        self.w.write_all(b"l").await?;
         while let Some(row) = rows.next()? {
             let id: i64 = row.get("id")?;
             let msg_id: i64 = row.get("msg_id")?;
             let update_item: String = row.get("update_item")?;
 
-            self.w.write_all(b"d\n").await?;
+            self.w.write_all(b"d").await?;
 
             write_str(&mut self.w, "id").await?;
             write_i64(&mut self.w, id).await?;
@@ -700,9 +698,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             write_str(&mut self.w, "update_item").await?;
             write_str(&mut self.w, &update_item).await?;
 
-            self.w.write_all(b"e\n").await?;
+            self.w.write_all(b"e").await?;
         }
-        self.w.write_all(b"e\n").await?;
+        self.w.write_all(b"e").await?;
         Ok(())
     }
 
@@ -710,12 +708,12 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         let mut stmt = self.tx.prepare("SELECT item FROM multi_device_sync")?;
         let mut rows = stmt.query(())?;
 
-        self.w.write_all(b"l\n").await?;
+        self.w.write_all(b"l").await?;
         while let Some(row) = rows.next()? {
             let item: String = row.get("item")?;
             write_str(&mut self.w, &item).await?;
         }
-        self.w.write_all(b"e\n").await?;
+        self.w.write_all(b"e").await?;
         Ok(())
     }
 
@@ -726,13 +724,13 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             .prepare("SELECT msg_id, contact_id, reaction FROM reactions")?;
         let mut rows = stmt.query(())?;
 
-        self.w.write_all(b"l\n").await?;
+        self.w.write_all(b"l").await?;
         while let Some(row) = rows.next()? {
             let msg_id: u32 = row.get("msg_id")?;
             let contact_id: u32 = row.get("contact_id")?;
             let reaction: String = row.get("reaction")?;
 
-            self.w.write_all(b"d\n").await?;
+            self.w.write_all(b"d").await?;
 
             write_str(&mut self.w, "contact_id").await?;
             write_u32(&mut self.w, contact_id).await?;
@@ -743,9 +741,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             write_str(&mut self.w, "reaction").await?;
             write_str(&mut self.w, &reaction).await?;
 
-            self.w.write_all(b"e\n").await?;
+            self.w.write_all(b"e").await?;
         }
-        self.w.write_all(b"e\n").await?;
+        self.w.write_all(b"e").await?;
         Ok(())
     }
 
@@ -755,12 +753,12 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             .prepare("SELECT domain, dkim_works FROM sending_domains")?;
         let mut rows = stmt.query(())?;
 
-        self.w.write_all(b"l\n").await?;
+        self.w.write_all(b"l").await?;
         while let Some(row) = rows.next()? {
             let domain: String = row.get("domain")?;
             let dkim_works: i64 = row.get("dkim_works")?;
 
-            self.w.write_all(b"d\n").await?;
+            self.w.write_all(b"d").await?;
 
             write_str(&mut self.w, "dkim_works").await?;
             write_i64(&mut self.w, dkim_works).await?;
@@ -768,9 +766,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             write_str(&mut self.w, "domain").await?;
             write_str(&mut self.w, &domain).await?;
 
-            self.w.write_all(b"e\n").await?;
+            self.w.write_all(b"e").await?;
         }
-        self.w.write_all(b"e\n").await?;
+        self.w.write_all(b"e").await?;
         Ok(())
     }
 
@@ -780,7 +778,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             .prepare("SELECT id, namespc, foreign_id, token, timestamp FROM tokens")?;
         let mut rows = stmt.query(())?;
 
-        self.w.write_all(b"l\n").await?;
+        self.w.write_all(b"l").await?;
         while let Some(row) = rows.next()? {
             let id: i64 = row.get("id")?;
             let namespace: u32 = row.get("namespc")?;
@@ -788,7 +786,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             let token: String = row.get("token")?;
             let timestamp: i64 = row.get("timestamp")?;
 
-            self.w.write_all(b"d\n").await?;
+            self.w.write_all(b"d").await?;
 
             write_str(&mut self.w, "foreign_id").await?;
             write_u32(&mut self.w, foreign_id).await?;
@@ -805,9 +803,9 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             write_str(&mut self.w, "token").await?;
             write_str(&mut self.w, &token).await?;
 
-            self.w.write_all(b"e\n").await?;
+            self.w.write_all(b"e").await?;
         }
-        self.w.write_all(b"e\n").await?;
+        self.w.write_all(b"e").await?;
         Ok(())
     }
 
@@ -823,7 +821,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
             ));
         }
 
-        self.w.write_all(b"d\n").await?;
+        self.w.write_all(b"d").await?;
 
         write_str(&mut self.w, "_config").await?;
         self.serialize_config().await?;
@@ -905,7 +903,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
         // bobstate is not serialized, it is temporary for joining or adding a contact.
         //
         // TODO insert welcome message on import like done in `delete_and_reset_all_device_msgs()`?
-        self.w.write_all(b"e\n").await?;
+        self.w.write_all(b"e").await?;
         self.w.flush().await?;
         Ok(())
     }
