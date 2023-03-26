@@ -229,6 +229,24 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
         Ok(())
     }
 
+    async fn deserialize_acpeerstates(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
+        Ok(())
+    }
+
+    async fn deserialize_chats(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
+        Ok(())
+    }
+
+    async fn deserialize_chats_contacts(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
+        Ok(())
+    }
+
     async fn deserialize_contacts(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
         self.expect_list().await?;
         loop {
@@ -265,49 +283,7 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
         Ok(())
     }
 
-    async fn deserialize_chats(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
-        self.expect_list().await?;
-        self.skip_until_end().await?;
-        Ok(())
-    }
-
-    async fn deserialize_leftgroups(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
-        self.expect_list().await?;
-        self.skip_until_end().await?;
-        Ok(())
-    }
-
-    async fn deserialize_keypairs(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
-        self.expect_list().await?;
-        self.skip_until_end().await?;
-        Ok(())
-    }
-
-    async fn deserialize_messages(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
-        self.expect_list().await?;
-        self.skip_until_end().await?;
-        Ok(())
-    }
-
-    async fn deserialize_mdns(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
-        self.expect_list().await?;
-        self.skip_until_end().await?;
-        Ok(())
-    }
-
-    async fn deserialize_reactions(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
-        self.expect_list().await?;
-        self.skip_until_end().await?;
-        Ok(())
-    }
-
-    async fn deserialize_tokens(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
-        self.expect_list().await?;
-        self.skip_until_end().await?;
-        Ok(())
-    }
-
-    async fn deserialize_locations(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+    async fn deserialize_dns_cache(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
         self.expect_list().await?;
         self.skip_until_end().await?;
         Ok(())
@@ -325,13 +301,31 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
         Ok(())
     }
 
-    async fn deserialize_multi_device_sync(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+    async fn deserialize_keypairs(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
         self.expect_list().await?;
         self.skip_until_end().await?;
         Ok(())
     }
 
-    async fn deserialize_sending_domains(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+    async fn deserialize_leftgroups(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
+        Ok(())
+    }
+
+    async fn deserialize_locations(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
+        Ok(())
+    }
+
+    async fn deserialize_mdns(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
+        Ok(())
+    }
+
+    async fn deserialize_messages(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
         self.expect_list().await?;
         self.skip_until_end().await?;
         Ok(())
@@ -343,19 +337,24 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
         Ok(())
     }
 
-    async fn deserialize_acpeerstates(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+    async fn deserialize_multi_device_sync(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
         self.expect_list().await?;
         self.skip_until_end().await?;
         Ok(())
     }
 
-    async fn deserialize_chats_contacts(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+    async fn deserialize_reactions(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
         self.expect_list().await?;
         self.skip_until_end().await?;
         Ok(())
     }
 
-    async fn deserialize_dns_cache(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+    async fn deserialize_sending_domains(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        self.expect_list().await?;
+        self.skip_until_end().await?;
+        Ok(())
+    }
+    async fn deserialize_tokens(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
         self.expect_list().await?;
         self.skip_until_end().await?;
         Ok(())
@@ -394,107 +393,95 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
     async fn deserialize(mut self, mut tx: Transaction<'_>) -> Result<()> {
         self.expect_dictionary().await?;
 
-        // The first section should always be a config section.
-        self.expect_fixed_key("config").await?;
+        self.expect_fixed_key("_config").await?;
         self.deserialize_config(&mut tx)
             .await
             .context("deserialize_config")?;
 
-        // Read remaining sections.
-        while let Some(key) = self.expect_key().await? {
-            match key.as_slice() {
-                b"contacts" => {
-                    self.deserialize_contacts(&mut tx)
-                        .await
-                        .context("deserialize_contacts")?;
-                }
-                b"chats" => {
-                    self.deserialize_chats(&mut tx)
-                        .await
-                        .context("deserialize_chats")?;
-                }
-                b"leftgroups" => {
-                    self.deserialize_leftgroups(&mut tx)
-                        .await
-                        .context("deserialize_leftgroups")?;
-                }
-                b"keypairs" => {
-                    self.deserialize_keypairs(&mut tx)
-                        .await
-                        .context("deserialize_keypairs")?;
-                }
-                b"messages" => {
-                    self.deserialize_messages(&mut tx)
-                        .await
-                        .context("deserialize_messages")?;
-                }
-                b"mdns" => {
-                    self.deserialize_mdns(&mut tx)
-                        .await
-                        .context("deserialize_mdns")?;
-                }
-                b"reactions" => {
-                    self.deserialize_reactions(&mut tx)
-                        .await
-                        .context("deserialize_reactions")?;
-                }
-                b"tokens" => {
-                    self.deserialize_tokens(&mut tx)
-                        .await
-                        .context("deserialize_tokens")?;
-                }
-                b"locations" => {
-                    self.deserialize_locations(&mut tx)
-                        .await
-                        .context("deserialize_locations")?;
-                }
-                b"imap" => {
-                    self.deserialize_imap(&mut tx)
-                        .await
-                        .context("deserialize_imap")?;
-                }
-                b"imap_sync" => {
-                    self.deserialize_imap_sync(&mut tx)
-                        .await
-                        .context("deserialize_imap_sync")?;
-                }
-                b"multi_device_sync" => {
-                    self.deserialize_multi_device_sync(&mut tx)
-                        .await
-                        .context("deserialize_multi_device_sync")?;
-                }
-                b"sending_domains" => {
-                    self.deserialize_sending_domains(&mut tx)
-                        .await
-                        .context("deserialize_sending_domains")?;
-                }
-                b"msgs_status_updates" => {
-                    self.deserialize_msgs_status_updates(&mut tx)
-                        .await
-                        .context("deserialize_msgs_status_updates")?;
-                }
-                b"acpeerstates" => {
-                    self.deserialize_acpeerstates(&mut tx)
-                        .await
-                        .context("deserialize_acpeerstates")?;
-                }
-                b"chats_contacts" => {
-                    self.deserialize_chats_contacts(&mut tx)
-                        .await
-                        .context("deserialize_chats_contacts")?;
-                }
-                b"dns_cache" => {
-                    self.deserialize_dns_cache(&mut tx)
-                        .await
-                        .context("deserialize_dns_cache")?;
-                }
-                section => {
-                    self.skip_object()
-                        .await
-                        .with_context(|| format!("skipping {section:?}"))?;
-                }
-            }
-        }
+        self.expect_fixed_key("acpeerstates").await?;
+        self.deserialize_acpeerstates(&mut tx)
+            .await
+            .context("deserialize_acpeerstates")?;
+
+        self.expect_fixed_key("chats").await?;
+        self.deserialize_chats(&mut tx)
+            .await
+            .context("deserialize_chats")?;
+
+        self.expect_fixed_key("chats_contacts").await?;
+        self.deserialize_chats_contacts(&mut tx)
+            .await
+            .context("deserialize_chats_contacts")?;
+
+        self.expect_fixed_key("contacts").await?;
+        self.deserialize_contacts(&mut tx)
+            .await
+            .context("deserialize_contacts")?;
+
+        self.expect_fixed_key("dns_cache").await?;
+        self.deserialize_dns_cache(&mut tx)
+            .await
+            .context("deserialize_dns_cache")?;
+
+        self.expect_fixed_key("imap").await?;
+        self.deserialize_imap(&mut tx)
+            .await
+            .context("deserialize_imap")?;
+
+        self.expect_fixed_key("imap_sync").await?;
+        self.deserialize_imap_sync(&mut tx)
+            .await
+            .context("deserialize_imap_sync")?;
+
+        self.expect_fixed_key("keypairs").await?;
+        self.deserialize_keypairs(&mut tx)
+            .await
+            .context("deserialize_keypairs")?;
+
+        self.expect_fixed_key("leftgroups").await?;
+        self.deserialize_leftgroups(&mut tx)
+            .await
+            .context("deserialize_leftgroups")?;
+
+        self.expect_fixed_key("locations").await?;
+        self.deserialize_locations(&mut tx)
+            .await
+            .context("deserialize_locations")?;
+
+        self.expect_fixed_key("mdns").await?;
+        self.deserialize_mdns(&mut tx)
+            .await
+            .context("deserialize_mdns")?;
+
+        self.expect_fixed_key("messages").await?;
+        self.deserialize_messages(&mut tx)
+            .await
+            .context("deserialize_messages")?;
+
+        self.expect_fixed_key("msgs_status_updates").await?;
+        self.deserialize_msgs_status_updates(&mut tx)
+            .await
+            .context("deserialize_msgs_status_updates")?;
+
+        self.expect_fixed_key("multi_device_sync").await?;
+        self.deserialize_multi_device_sync(&mut tx)
+            .await
+            .context("deserialize_multi_device_sync")?;
+
+        self.expect_fixed_key("reactions").await?;
+        self.deserialize_reactions(&mut tx)
+            .await
+            .context("deserialize_reactions")?;
+
+        self.expect_fixed_key("sending_domains").await?;
+        self.deserialize_sending_domains(&mut tx)
+            .await
+            .context("deserialize_sending_domains")?;
+
+        self.expect_fixed_key("tokens").await?;
+        self.deserialize_tokens(&mut tx)
+            .await
+            .context("deserialize_tokens")?;
 
         // TODO: uncomment
         //self.tx.commit()?;
