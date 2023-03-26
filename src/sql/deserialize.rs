@@ -401,104 +401,97 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
             .context("deserialize_config")?;
 
         // Read remaining sections.
-        loop {
-            let token = self.expect_token().await?;
-            match token {
-                BencodeToken::ByteString(key) => match key.as_slice() {
-                    b"contacts" => {
-                        self.deserialize_contacts(&mut tx)
-                            .await
-                            .context("deserialize_contacts")?;
-                    }
-                    b"chats" => {
-                        self.deserialize_chats(&mut tx)
-                            .await
-                            .context("deserialize_chats")?;
-                    }
-                    b"leftgroups" => {
-                        self.deserialize_leftgroups(&mut tx)
-                            .await
-                            .context("deserialize_leftgroups")?;
-                    }
-                    b"keypairs" => {
-                        self.deserialize_keypairs(&mut tx)
-                            .await
-                            .context("deserialize_keypairs")?;
-                    }
-                    b"messages" => {
-                        self.deserialize_messages(&mut tx)
-                            .await
-                            .context("deserialize_messages")?;
-                    }
-                    b"mdns" => {
-                        self.deserialize_mdns(&mut tx)
-                            .await
-                            .context("deserialize_mdns")?;
-                    }
-                    b"reactions" => {
-                        self.deserialize_reactions(&mut tx)
-                            .await
-                            .context("deserialize_reactions")?;
-                    }
-                    b"tokens" => {
-                        self.deserialize_tokens(&mut tx)
-                            .await
-                            .context("deserialize_tokens")?;
-                    }
-                    b"locations" => {
-                        self.deserialize_locations(&mut tx)
-                            .await
-                            .context("deserialize_locations")?;
-                    }
-                    b"imap" => {
-                        self.deserialize_imap(&mut tx)
-                            .await
-                            .context("deserialize_imap")?;
-                    }
-                    b"imap_sync" => {
-                        self.deserialize_imap_sync(&mut tx)
-                            .await
-                            .context("deserialize_imap_sync")?;
-                    }
-                    b"multi_device_sync" => {
-                        self.deserialize_multi_device_sync(&mut tx)
-                            .await
-                            .context("deserialize_multi_device_sync")?;
-                    }
-                    b"sending_domains" => {
-                        self.deserialize_sending_domains(&mut tx)
-                            .await
-                            .context("deserialize_sending_domains")?;
-                    }
-                    b"msgs_status_updates" => {
-                        self.deserialize_msgs_status_updates(&mut tx)
-                            .await
-                            .context("deserialize_msgs_status_updates")?;
-                    }
-                    b"acpeerstates" => {
-                        self.deserialize_acpeerstates(&mut tx)
-                            .await
-                            .context("deserialize_acpeerstates")?;
-                    }
-                    b"chats_contacts" => {
-                        self.deserialize_chats_contacts(&mut tx)
-                            .await
-                            .context("deserialize_chats_contacts")?;
-                    }
-                    b"dns_cache" => {
-                        self.deserialize_dns_cache(&mut tx)
-                            .await
-                            .context("deserialize_dns_cache")?;
-                    }
-                    section => {
-                        self.skip_object()
-                            .await
-                            .with_context(|| format!("skipping {section:?}"))?;
-                    }
-                },
-                BencodeToken::End => break,
-                t => {
-                    bail!("unexpected token {t:?}, expected section name or end of dictionary");
+        while let Some(key) = self.expect_key().await? {
+            match key.as_slice() {
+                b"contacts" => {
+                    self.deserialize_contacts(&mut tx)
+                        .await
+                        .context("deserialize_contacts")?;
+                }
+                b"chats" => {
+                    self.deserialize_chats(&mut tx)
+                        .await
+                        .context("deserialize_chats")?;
+                }
+                b"leftgroups" => {
+                    self.deserialize_leftgroups(&mut tx)
+                        .await
+                        .context("deserialize_leftgroups")?;
+                }
+                b"keypairs" => {
+                    self.deserialize_keypairs(&mut tx)
+                        .await
+                        .context("deserialize_keypairs")?;
+                }
+                b"messages" => {
+                    self.deserialize_messages(&mut tx)
+                        .await
+                        .context("deserialize_messages")?;
+                }
+                b"mdns" => {
+                    self.deserialize_mdns(&mut tx)
+                        .await
+                        .context("deserialize_mdns")?;
+                }
+                b"reactions" => {
+                    self.deserialize_reactions(&mut tx)
+                        .await
+                        .context("deserialize_reactions")?;
+                }
+                b"tokens" => {
+                    self.deserialize_tokens(&mut tx)
+                        .await
+                        .context("deserialize_tokens")?;
+                }
+                b"locations" => {
+                    self.deserialize_locations(&mut tx)
+                        .await
+                        .context("deserialize_locations")?;
+                }
+                b"imap" => {
+                    self.deserialize_imap(&mut tx)
+                        .await
+                        .context("deserialize_imap")?;
+                }
+                b"imap_sync" => {
+                    self.deserialize_imap_sync(&mut tx)
+                        .await
+                        .context("deserialize_imap_sync")?;
+                }
+                b"multi_device_sync" => {
+                    self.deserialize_multi_device_sync(&mut tx)
+                        .await
+                        .context("deserialize_multi_device_sync")?;
+                }
+                b"sending_domains" => {
+                    self.deserialize_sending_domains(&mut tx)
+                        .await
+                        .context("deserialize_sending_domains")?;
+                }
+                b"msgs_status_updates" => {
+                    self.deserialize_msgs_status_updates(&mut tx)
+                        .await
+                        .context("deserialize_msgs_status_updates")?;
+                }
+                b"acpeerstates" => {
+                    self.deserialize_acpeerstates(&mut tx)
+                        .await
+                        .context("deserialize_acpeerstates")?;
+                }
+                b"chats_contacts" => {
+                    self.deserialize_chats_contacts(&mut tx)
+                        .await
+                        .context("deserialize_chats_contacts")?;
+                }
+                b"dns_cache" => {
+                    self.deserialize_dns_cache(&mut tx)
+                        .await
+                        .context("deserialize_dns_cache")?;
+                }
+                section => {
+                    self.skip_object()
+                        .await
+                        .with_context(|| format!("skipping {section:?}"))?;
                 }
             }
         }
