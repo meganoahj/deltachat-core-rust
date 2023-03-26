@@ -149,6 +149,13 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
         Ok(token)
     }
 
+    async fn expect_end(&mut self) -> Result<()> {
+        match self.expect_token().await? {
+            BencodeToken::End => Ok(()),
+            token => Err(anyhow!("unexpected token {token:?}, expected end")),
+        }
+    }
+
     /// Tries to read a dictionary token.
     ///
     /// Returns an error on EOF or unexpected token.
@@ -294,6 +301,42 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
 
             self.expect_key("gossip_timestamp").await?;
             let gossip_timestamp = self.expect_i64().await?;
+
+            self.expect_key("last_seen").await?;
+            let last_seen = self.expect_i64().await?;
+
+            self.expect_key("last_seen_autocrypt").await?;
+            let last_seen_autocrypt = self.expect_i64().await?;
+
+            self.expect_key("prefer_encrypted").await?;
+            let prefer_encrypted = self.expect_i64().await?;
+
+            let public_key = if self.expect_key_opt("public_key").await? {
+                Some(self.expect_string().await?)
+            } else {
+                None
+            };
+
+            let public_key_fingerprint = if self.expect_key_opt("public_key_fingerprint").await? {
+                Some(self.expect_string().await?)
+            } else {
+                None
+            };
+
+            let verified_key = if self.expect_key_opt("verified_key").await? {
+                Some(self.expect_string().await?)
+            } else {
+                None
+            };
+
+            let verified_key_fingerprint =
+                if self.expect_key_opt("verified_key_fingerprint").await? {
+                    Some(self.expect_string().await?)
+                } else {
+                    None
+                };
+
+            self.expect_end().await?;
         }
         Ok(())
     }
@@ -515,6 +558,8 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
         self.deserialize_tokens(&mut tx)
             .await
             .context("deserialize_tokens")?;
+
+        self.expect_end().await?;
 
         // TODO: uncomment
         //self.tx.commit()?;
