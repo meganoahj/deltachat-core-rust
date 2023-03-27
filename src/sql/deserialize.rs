@@ -202,6 +202,12 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
         Ok(s)
     }
 
+    /// Tries to read a binary blob.
+    async fn expect_blob(&mut self) -> Result<Vec<u8>> {
+        let s = self.expect_bstring().await?;
+        Ok(s.into())
+    }
+
     /// Tries to read a string dictionary key.
     ///
     /// Returns `None` if the end of dictionary is reached.
@@ -307,7 +313,7 @@ VALUES       (:addr,
             let addr = self.expect_string().await?;
 
             let gossip_key = if self.expect_key_opt("gossip_key").await? {
-                Some(self.expect_string().await?)
+                Some(self.expect_blob().await?)
             } else {
                 None
             };
@@ -331,7 +337,7 @@ VALUES       (:addr,
             let prefer_encrypted = self.expect_i64().await?;
 
             let public_key = if self.expect_key_opt("public_key").await? {
-                Some(self.expect_string().await?)
+                Some(self.expect_blob().await?)
             } else {
                 None
             };
@@ -343,7 +349,7 @@ VALUES       (:addr,
             };
 
             let verified_key = if self.expect_key_opt("verified_key").await? {
-                Some(self.expect_string().await?)
+                Some(self.expect_blob().await?)
             } else {
                 None
             };
@@ -367,7 +373,7 @@ VALUES       (:addr,
             ":public_key_fingerprint": public_key_fingerprint,
             ":verified_key": verified_key,
             ":verified_key_fingerprint": verified_key_fingerprint
-            });
+            })?;
 
             self.expect_end().await?;
         }
