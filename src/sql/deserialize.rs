@@ -186,14 +186,20 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
         }
     }
 
-    /// Tries to read a string.
+    /// Tries to read a bytestring.
     ///
     /// Returns an error on EOF or unexpected token.
-    async fn expect_string(&mut self) -> Result<BString> {
+    async fn expect_bstring(&mut self) -> Result<BString> {
         match self.expect_token().await? {
             BencodeToken::ByteString(s) => Ok(s),
             token => Err(anyhow!("unexpected token {token:?}, expected list")),
         }
+    }
+
+    /// Tries to read an UTF-8 string.
+    async fn expect_string(&mut self) -> Result<String> {
+        let s = self.expect_bstring().await?.try_into()?;
+        Ok(s)
     }
 
     /// Tries to read a string dictionary key.
@@ -259,12 +265,12 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
                             dbversion_found = true;
                         }
 
-                        if value.as_slice() != b"99" {
+                        if value != "99" {
                             bail!("unsupported serialized database version {value:?}, expected 99");
                         }
                     }
 
-                    stmt.execute([key.as_slice(), value.as_slice()])?;
+                    stmt.execute([key.as_slice(), value.as_bytes()])?;
                 }
                 BencodeToken::End => break,
                 t => return Err(anyhow!("unexpected token {t:?}, expected config key")),
@@ -278,6 +284,23 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
     }
 
     async fn deserialize_acpeerstates(&mut self, tx: &mut Transaction<'_>) -> Result<()> {
+        let mut stmt = tx.prepare(
+            "
+INSERT INTO
+acpeerstates (addr,
+              gossip_key, gossip_key_fingerprint, gossip_timestamp,
+              last_seen, last_seen_autocrypt,
+              prefer_encrypted,
+              public_key, public_key_fingerprint,
+              verified_key, verified_key_fingerprint)
+VALUES       (:addr,
+              :gossip_key, :gossip_key_fingerprint, :gossip_timestamp,
+              :last_seen, :last_seen_autocrypt,
+              :prefer_encrypted,
+              :public_key, :public_key_fingerprint,
+              :verified_key, :verified_key_fingerprint)",
+        )?;
+
         self.expect_list().await?;
         while self.expect_dictionary_opt().await? {
             self.expect_key("addr").await?;
@@ -331,6 +354,20 @@ impl<R: AsyncRead + Unpin> Decoder<R> {
                 } else {
                     None
                 };
+
+            stmt.execute(named_params! {
+            ":addr": addr,
+            ":gossip_key": gossip_key,
+            ":gossip_key_fingerprint": gossip_key_fingerprint,
+            ":gossip_timestamp": gossip_timestamp,
+            ":last_seen": last_seen,
+            ":last_seen_autocrypt": last_seen_autocrypt,
+            ":prefer_encrypted": prefer_encrypted,
+            ":public_key": public_key,
+            ":public_key_fingerprint": public_key_fingerprint,
+            ":verified_key": verified_key,
+            ":verified_key_fingerprint": verified_key_fingerprint
+            });
 
             self.expect_end().await?;
         }

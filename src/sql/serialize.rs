@@ -97,7 +97,7 @@ impl<'a, W: AsyncWrite + Unpin> Encoder<'a, W> {
     }
 
     async fn serialize_acpeerstates(&mut self) -> Result<()> {
-        let mut stmt = self.tx.prepare("SELECT id, addr, last_seen, last_seen_autocrypt, public_key, prefer_encrypted, gossip_timestamp, gossip_key, public_key_fingerprint, gossip_key_fingerprint, verified_key, verified_key_fingerprint FROM acpeerstates")?;
+        let mut stmt = self.tx.prepare("SELECT addr, last_seen, last_seen_autocrypt, public_key, prefer_encrypted, gossip_timestamp, gossip_key, public_key_fingerprint, gossip_key_fingerprint, verified_key, verified_key_fingerprint FROM acpeerstates")?;
         let mut rows = stmt.query(())?;
 
         self.w.write_all(b"l").await?;
