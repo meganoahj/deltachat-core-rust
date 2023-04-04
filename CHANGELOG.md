@@ -7,6 +7,8 @@
 - Remove upper limit on the attachment size. #4253
 - Update rPGP to 0.10.1. #4236
 - Compress `mime_headers` column with HTML emails stored in database
+- Cleanly terminate deltachat-rpc-server.
+  Also terminate on ctrl-c.
 
 ### Fixes
 - Fix python bindings README documentation on installing the bindings from source.
