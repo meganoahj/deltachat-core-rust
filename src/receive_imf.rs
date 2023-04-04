@@ -1643,43 +1643,46 @@ async fn apply_group_changes(
     let mut send_event_chat_modified = false;
     let mut removed_id = None;
     let mut better_msg = None;
-    let mut apply_group_changes = false;
 
-    let mut recreate_member_list = if mime_parser
-        .get_header(HeaderDef::ChatGroupMemberRemoved)
-        .is_some()
-        || mime_parser
-            .get_header(HeaderDef::ChatGroupMemberAdded)
-            .is_some()
-    {
-        let self_added =
-            if let Some(added_addr) = mime_parser.get_header(HeaderDef::ChatGroupMemberAdded) {
-                if let Ok(self_addr) = context.get_primary_self_addr().await {
-                    self_addr == *added_addr
-                } else {
-                    false
-                }
+    let self_added =
+        if let Some(added_addr) = mime_parser.get_header(HeaderDef::ChatGroupMemberAdded) {
+            if let Ok(self_addr) = context.get_primary_self_addr().await {
+                self_addr == *added_addr
             } else {
                 false
-            };
+            }
+        } else {
+            false
+        };
 
+    let recreate_member_list =
+        // if we're not in the group, reject don't bother about group members
         if !chat::is_contact_in_chat(context, chat_id, ContactId::SELF).await? && !self_added {
             false
         } else {
-            apply_group_changes = chat_id
+            let apply_group_changes = chat_id
                 .update_timestamp(context, Param::MemberListTimestamp, sent_timestamp)
                 .await?;
 
-            match mime_parser.get_header(HeaderDef::InReplyTo) {
-                // If we don't know the referenced message, we missed some messages which could be add/delete
-                Some(reply_to) if rfc724_mid_exists(context, reply_to).await?.is_none() => true,
-                Some(_) => self_added,
-                None => false,
+            // always reject old group changes
+
+            if apply_group_changes {
+                // Recreate member list if the message comes from a MUA as these messages
+                // do _not_ set add/remove headers
+                if !mime_parser.has_chat_version() && apply_group_changes {
+                    true
+                } else {
+                    match mime_parser.get_header(HeaderDef::InReplyTo) {
+                        // If we don't know the referenced message, we missed some messages which could be add/delete
+                        Some(reply_to) if rfc724_mid_exists(context, reply_to).await?.is_none() => true,
+                        Some(_) => self_added,
+                        None => false,
+                    }
+                }
+            } else {
+                false
             }
-        }
-    } else {
-        false
-    };
+        };
 
     if let Some(removed_addr) = mime_parser
         .get_header(HeaderDef::ChatGroupMemberRemoved)
@@ -1687,31 +1690,41 @@ async fn apply_group_changes(
     {
         removed_id = Contact::lookup_id_by_addr(context, &removed_addr, Origin::Unknown).await?;
         if let Some(contact_id) = removed_id {
-            // remove a single member from the chat
-            if !recreate_member_list && apply_group_changes {
-                chat::remove_from_chat_contacts_table(context, chat_id, contact_id).await?;
-                send_event_chat_modified = true;
-            }
+            let apply_group_changes = chat_id
+                .update_timestamp(context, Param::MemberListTimestamp, sent_timestamp)
+                .await?;
+            if apply_group_changes {
+                // remove a single member from the chat
+                if !recreate_member_list {
+                    chat::remove_from_chat_contacts_table(context, chat_id, contact_id).await?;
+                    send_event_chat_modified = true;
+                }
 
-            better_msg = if contact_id == from_id {
-                Some(stock_str::msg_group_left(context, from_id).await)
-            } else {
-                Some(stock_str::msg_del_member(context, &removed_addr, from_id).await)
-            };
+                better_msg = if contact_id == from_id {
+                    Some(stock_str::msg_group_left(context, from_id).await)
+                } else {
+                    Some(stock_str::msg_del_member(context, &removed_addr, from_id).await)
+                };
+            }
         }
     } else if let Some(added_addr) = mime_parser
         .get_header(HeaderDef::ChatGroupMemberAdded)
         .cloned()
     {
-        better_msg = Some(stock_str::msg_add_member(context, &added_addr, from_id).await);
+        let apply_group_changes = chat_id
+            .update_timestamp(context, Param::MemberListTimestamp, sent_timestamp)
+            .await?;
+        if apply_group_changes {
+            better_msg = Some(stock_str::msg_add_member(context, &added_addr, from_id).await);
 
-        // add a single member to the chat
-        if !recreate_member_list && apply_group_changes {
-            if let Some(contact_id) =
-                Contact::lookup_id_by_addr(context, &added_addr, Origin::Unknown).await?
-            {
-                chat::add_to_chat_contacts_table(context, chat_id, &[contact_id]).await?;
-                send_event_chat_modified = true;
+            // add a single member to the chat
+            if !recreate_member_list {
+                if let Some(contact_id) =
+                    Contact::lookup_id_by_addr(context, &added_addr, Origin::Unknown).await?
+                {
+                    chat::add_to_chat_contacts_table(context, chat_id, &[contact_id]).await?;
+                    send_event_chat_modified = true;
+                }
             }
         }
     } else if let Some(old_name) = mime_parser
@@ -1771,15 +1784,6 @@ async fn apply_group_changes(
                 .inner_set_protection(context, ProtectionStatus::Protected)
                 .await?;
         }
-    }
-
-    // Recreate member list if message is from a MUA
-    if !mime_parser.has_chat_version()
-        && chat_id
-            .update_timestamp(context, Param::MemberListTimestamp, sent_timestamp)
-            .await?
-    {
-        recreate_member_list = true;
     }
 
     // recreate member list
