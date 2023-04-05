@@ -1643,6 +1643,7 @@ async fn apply_group_changes(
     let mut send_event_chat_modified = false;
     let mut removed_id = None;
     let mut better_msg = None;
+    let mut apply_group_changes = false;
 
     let self_added =
         if let Some(added_addr) = mime_parser.get_header(HeaderDef::ChatGroupMemberAdded) {
@@ -1656,16 +1657,15 @@ async fn apply_group_changes(
         };
 
     let recreate_member_list =
-        // if we're not in the group, reject don't bother about group members
+        // If we're not in the group, don't bother about group members
         if !chat::is_contact_in_chat(context, chat_id, ContactId::SELF).await? && !self_added {
             false
         } else {
-            let apply_group_changes = chat_id
+            apply_group_changes = chat_id
                 .update_timestamp(context, Param::MemberListTimestamp, sent_timestamp)
                 .await?;
 
-            // always reject old group changes
-
+            // Always reject old group changes
             if apply_group_changes {
                 // Recreate member list if the message comes from a MUA as these messages
                 // do _not_ set add/remove headers
@@ -1675,6 +1675,7 @@ async fn apply_group_changes(
                     match mime_parser.get_header(HeaderDef::InReplyTo) {
                         // If we don't know the referenced message, we missed some messages which could be add/delete
                         Some(reply_to) if rfc724_mid_exists(context, reply_to).await?.is_none() => true,
+                        // If self is added to the new group, a missing reference message is to be expected
                         Some(_) => self_added,
                         None => false,
                     }
@@ -1690,11 +1691,8 @@ async fn apply_group_changes(
     {
         removed_id = Contact::lookup_id_by_addr(context, &removed_addr, Origin::Unknown).await?;
         if let Some(contact_id) = removed_id {
-            let apply_group_changes = chat_id
-                .update_timestamp(context, Param::MemberListTimestamp, sent_timestamp)
-                .await?;
             if apply_group_changes {
-                // remove a single member from the chat
+                // Remove a single member from the chat.
                 if !recreate_member_list {
                     chat::remove_from_chat_contacts_table(context, chat_id, contact_id).await?;
                     send_event_chat_modified = true;
@@ -1711,9 +1709,6 @@ async fn apply_group_changes(
         .get_header(HeaderDef::ChatGroupMemberAdded)
         .cloned()
     {
-        let apply_group_changes = chat_id
-            .update_timestamp(context, Param::MemberListTimestamp, sent_timestamp)
-            .await?;
         if apply_group_changes {
             better_msg = Some(stock_str::msg_add_member(context, &added_addr, from_id).await);
 
@@ -1819,7 +1814,7 @@ async fn apply_group_changes(
 
             info!(
                 context,
-                "recreating chat {chat_id} with members {members_to_add:?}"
+                "Recreating chat {chat_id} with members {members_to_add:?}."
             );
 
             chat::add_to_chat_contacts_table(context, chat_id, &Vec::from_iter(members_to_add))

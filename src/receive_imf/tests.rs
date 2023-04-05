@@ -3249,6 +3249,44 @@ async fn test_mua_user_adds_recipient_to_single_chat() -> Result<()> {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn test_sync_member_list_on_rejoin() -> Result<()> {
+    let mut tcm = TestContextManager::new();
+    let alice = tcm.alice().await;
+
+    let bob_id = Contact::create(&alice, "", "bob@example.net").await?;
+    let claire_id = Contact::create(&alice, "", "claire@example.de").await?;
+
+    let alice_chat_id = create_group_chat(&alice, ProtectionStatus::Unprotected, "foos").await?;
+    add_contact_to_chat(&alice, alice_chat_id, bob_id).await?;
+    add_contact_to_chat(&alice, alice_chat_id, claire_id).await?;
+
+    send_text_msg(&alice, alice_chat_id, "populate".to_string()).await?;
+    let add = alice.pop_sent_msg().await;
+    let bob = tcm.bob().await;
+    bob.recv_msg(&add).await;
+    let bob_chat_id = bob.get_last_msg().await.chat_id;
+    assert_eq!(get_chat_contacts(&bob, bob_chat_id).await?.len(), 3);
+
+    // remove bob from chat
+    remove_contact_from_chat(&alice, alice_chat_id, bob_id).await?;
+    let remove_bob = alice.pop_sent_msg().await;
+    bob.recv_msg(&remove_bob).await;
+
+    // remove any other member
+    remove_contact_from_chat(&alice, alice_chat_id, claire_id).await?;
+    alice.pop_sent_msg().await;
+
+    // readd bob
+    add_contact_to_chat(&alice, alice_chat_id, bob_id).await?;
+    let add2 = alice.pop_sent_msg().await;
+    bob.recv_msg(&add2).await;
+
+    // number of members in chat should have updated
+    assert_eq!(get_chat_contacts(&bob, bob_chat_id).await?.len(), 2);
+    Ok(())
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn test_dont_recreate_contacts_on_add_remove() -> Result<()> {
     let alice = TestContext::new_alice().await;
     let bob = TestContext::new_bob().await;
@@ -3274,48 +3312,42 @@ async fn test_dont_recreate_contacts_on_add_remove() -> Result<()> {
     )
     .await?;
 
-    // bob adds a member
+    // bob adds a member.
     let bob_blue = Contact::create(&bob, "blue", "blue@example.net").await?;
     add_contact_to_chat(&bob, bob_chat_id, bob_blue).await?;
 
     alice.recv_msg(&bob.pop_sent_msg().await).await;
 
-    // We don't rebuild the contactlist of ours just because we received a new addition
+    // bob didn't receive the addition of fiona, but alice doesn't overwrite her own
+    // contact list with the one from bob which only has three members instead of four.
     assert_eq!(get_chat_contacts(&alice, alice_chat_id).await?.len(), 4);
 
-    // alice adds a member
-    add_contact_to_chat(
-        &alice,
-        alice_chat_id,
-        Contact::create(&alice, "daisy", "daisy@example.net").await?,
-    )
-    .await?;
-
-    // bob removes a member
+    // bob removes a member.
     remove_contact_from_chat(&bob, bob_chat_id, bob_blue).await?;
 
     alice.recv_msg(&bob.pop_sent_msg().await).await;
 
-    // We don't rebuild the contactlist of ours just because we received a new removal
-    assert_eq!(get_chat_contacts(&alice, alice_chat_id).await?.len(), 4);
+    // Bobs chat only has two members after the removal of blue, because he still
+    // didn't receive the addition of fiona. But that doesn't overwrite alice'
+    // memberlist.
+    assert_eq!(get_chat_contacts(&alice, alice_chat_id).await?.len(), 3);
 
     Ok(())
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn test_rebuild_contact_list_on_missing_message() -> Result<()> {
+async fn test_recreate_contact_list_on_missing_message() -> Result<()> {
     let alice = TestContext::new_alice().await;
     let bob = TestContext::new_bob().await;
-
     let chat_id = create_group_chat(&alice, ProtectionStatus::Unprotected, "Group").await?;
-
+    let alice_fiona = Contact::create(&alice, "fiona", "fiona@example.net").await?;
     // create chat with three members
     add_to_chat_contacts_table(
         &alice,
         chat_id,
         &[
             Contact::create(&alice, "bob", "bob@example.net").await?,
-            Contact::create(&alice, "fiona", "fiona@example.net").await?,
+            alice_fiona,
         ],
     )
     .await?;
@@ -3327,7 +3359,7 @@ async fn test_rebuild_contact_list_on_missing_message() -> Result<()> {
     // bob removes a member
     let bob_contact_fiona = Contact::create(&bob, "fiona", "fiona@example.net").await?;
     remove_contact_from_chat(&bob, bob_chat_id, bob_contact_fiona).await?;
-    bob.pop_sent_msg().await;
+    let remove_msg = bob.pop_sent_msg().await;
 
     // bob adds a new member
     let bob_blue = Contact::create(&bob, "blue", "blue@example.net").await?;
@@ -3340,6 +3372,14 @@ async fn test_rebuild_contact_list_on_missing_message() -> Result<()> {
 
     // since we missed a message, a new contact list should be build
     assert_eq!(get_chat_contacts(&alice, chat_id).await?.len(), 3);
+
+    // readd fiona
+    add_contact_to_chat(&alice, chat_id, alice_fiona).await?;
+
+    alice.recv_msg(&remove_msg).await;
+
+    // delayed removal of fiona shouldn't remove her
+    assert_eq!(get_chat_contacts(&alice, chat_id).await?.len(), 4);
 
     Ok(())
 }
@@ -3383,7 +3423,7 @@ async fn test_dont_readd_with_normal_msg() -> Result<()> {
 async fn test_mua_cant_remove() -> Result<()> {
     let alice = TestContext::new_alice().await;
 
-    // Alice creates chat with 2 contacts
+    // Alice creates chat with 3 contacts
     let msg = receive_imf(
         &alice,
         b"Subject: =?utf-8?q?Message_from_alice=40example=2Eorg?=\r\n\
@@ -3398,11 +3438,11 @@ async fn test_mua_cant_remove() -> Result<()> {
     )
     .await?
     .unwrap();
-    let single_chat = Chat::load_from_db(&alice, msg.chat_id).await?;
-    assert_eq!(single_chat.typ, Chattype::Group);
+    let alice_chat = Chat::load_from_db(&alice, msg.chat_id).await?;
+    assert_eq!(alice_chat.typ, Chattype::Group);
 
-    // Bob uses a classical MUA to answer again, removing a recipient.
-    let msg3 = receive_imf(
+    // Bob uses a classical MUA to answer, removing a recipient.
+    let bob_removes = receive_imf(
         &alice,
         b"Subject: Re: Message from alice\r\n\
             From: <bob@example.net>\r\n\
@@ -3416,12 +3456,59 @@ async fn test_mua_cant_remove() -> Result<()> {
     )
     .await?
     .unwrap();
-    assert_eq!(msg3.chat_id, single_chat.id);
-    let group_chat = Chat::load_from_db(&alice, msg3.chat_id).await?;
+    assert_eq!(bob_removes.chat_id, alice_chat.id);
+    let group_chat = Chat::load_from_db(&alice, bob_removes.chat_id).await?;
     assert_eq!(group_chat.typ, Chattype::Group);
     assert_eq!(
         chat::get_chat_contacts(&alice, group_chat.id).await?.len(),
         4
+    );
+    Ok(())
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn test_mua_can_add() -> Result<()> {
+    let alice = TestContext::new_alice().await;
+
+    // Alice creates chat with 3 contacts
+    let msg = receive_imf(
+        &alice,
+        b"Subject: =?utf-8?q?Message_from_alice=40example=2Eorg?=\r\n\
+            From: alice@example.org\r\n\
+            To: <bob@example.net>, <claire@example.org>, <fiona@example.org> \r\n\
+            Date: Mon, 12 Dec 2022 14:30:39 +0000\r\n\
+            Message-ID: <Mr.alices_original_mail@example.org>\r\n\
+            Chat-Version: 1.0\r\n\
+            \r\n\
+            Hi!\r\n",
+        false,
+    )
+    .await?
+    .unwrap();
+    let alice_chat = Chat::load_from_db(&alice, msg.chat_id).await?;
+    assert_eq!(alice_chat.typ, Chattype::Group);
+
+    // Bob uses a classical MUA to answer, adding a recipient.
+    let bob_adds = receive_imf(
+        &alice,
+        b"Subject: Re: Message from alice\r\n\
+            From: <bob@example.net>\r\n\
+            To: <alice@example.org>, <claire@example.org>, <fiona@example.org>, <greg@example.host>\r\n\
+            Date: Mon, 12 Dec 2022 14:32:39 +0000\r\n\
+            Message-ID: <bobs_answer_to_two_recipients@example.net>\r\n\
+            In-Reply-To: <Mr.alices_original_mail@example.org>\r\n\
+            \r\n\
+            Hi back!\r\n",
+        false,
+    )
+    .await?
+    .unwrap();
+
+    let group_chat = Chat::load_from_db(&alice, bob_adds.chat_id).await?;
+    assert_eq!(group_chat.typ, Chattype::Group);
+    assert_eq!(
+        chat::get_chat_contacts(&alice, group_chat.id).await?.len(),
+        5
     );
     Ok(())
 }
