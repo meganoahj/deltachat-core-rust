@@ -9,7 +9,7 @@
 - Compress `mime_headers` column with HTML emails stored in database
 - Strip BIDI characters in system messages, files, group names and contact names #3479
 - maybe_add_time_based_warnings(): Use release date instead of the provider DB update one
-
+- Improve group member consistency #4185
 
 ### Fixes
 - Fix python bindings README documentation on installing the bindings from source.
