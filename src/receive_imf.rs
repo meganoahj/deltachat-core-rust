@@ -1667,17 +1667,15 @@ async fn apply_group_changes(
 
             // Always reject old group changes
             if apply_group_changes {
-                // Recreate member list if the message comes from a MUA as these messages
-                // do _not_ set add/remove headers
-                if !mime_parser.has_chat_version() && apply_group_changes {
+                // Recreate member list if the message comes from a MUA as these messages do _not_ set add/remove headers. 
+                // Always recreate membership list if self has been added.
+                if !mime_parser.has_chat_version()  || self_added {
                     true
                 } else {
                     match mime_parser.get_header(HeaderDef::InReplyTo) {
                         // If we don't know the referenced message, we missed some messages which could be add/delete
                         Some(reply_to) if rfc724_mid_exists(context, reply_to).await?.is_none() => true,
-                        // If self is added to the new group, a missing reference message is to be expected
-                        Some(_) => self_added,
-                        None => false,
+                        _ => false,
                     }
                 }
             } else {
@@ -1712,7 +1710,7 @@ async fn apply_group_changes(
         if apply_group_changes {
             better_msg = Some(stock_str::msg_add_member(context, &added_addr, from_id).await);
 
-            // add a single member to the chat
+            // Add a single member to the chat.
             if !recreate_member_list {
                 if let Some(contact_id) =
                     Contact::lookup_id_by_addr(context, &added_addr, Origin::Unknown).await?
@@ -1789,7 +1787,7 @@ async fn apply_group_changes(
                 "Contact {from_id} attempts to modify group chat {chat_id} member list without being a member."
             );
         } else {
-            // only delete old contacts if the sender is not a MUA
+            // Only delete old contacts if the sender is not a MUA
             if mime_parser.has_chat_version() {
                 context
                     .sql
