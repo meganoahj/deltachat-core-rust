@@ -37,9 +37,7 @@ use crate::reaction::{set_msg_reaction, Reaction};
 use crate::securejoin::{self, handle_securejoin_handshake, observe_securejoin_on_other_device};
 use crate::sql;
 use crate::stock_str;
-use crate::tools::{
-    buf_compress, extract_grpid_from_rfc724_mid, smeared_time, strip_rtlo_characters,
-};
+use crate::tools::{buf_compress, extract_grpid_from_rfc724_mid, smeared_time};
 use crate::{contact, imap};
 
 /// This is the struct that is returned after receiving one email (aka MIME message).
